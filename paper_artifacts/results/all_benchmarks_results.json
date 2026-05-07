@@ -1,0 +1,554 @@
+{
+  "name": "LLMForge benchmark suite",
+  "description": "Zero-shot benchmark accuracies for the 9 models in the FineWeb-Edu-10BT comparison table",
+  "training": {
+    "dataset": "FineWeb-Edu sample-10BT",
+    "tokens": "13.1B",
+    "iterations": 100000,
+    "batch_size": 64,
+    "block_size": 1024,
+    "gradient_accumulation_steps": 2,
+    "optimizer": "AdamW (beta1=0.9, beta2=0.99, weight_decay=0.1)",
+    "schedule": "cosine, 3e-4 -> 3e-5 over 100K iters with 2K warmup",
+    "precision": "bfloat16",
+    "init_from": "scratch"
+  },
+  "evaluation": {
+    "harness": "benchmarks/evaluate_custom_models.py + eval_wg_sciq_fixed.py",
+    "scoring": "length-normalized log-likelihood (acc_norm); per-choice ctx for SciQ open-book",
+    "block_size": 1024,
+    "precision": "bfloat16",
+    "split": "validation"
+  },
+  "benchmark_metadata": {
+    "arc_easy": {
+      "examples": 570,
+      "choices": 4,
+      "random": 0.25,
+      "note": "easy school science"
+    },
+    "arc_challenge": {
+      "examples": 299,
+      "choices": 4,
+      "random": 0.25,
+      "note": "hard school science"
+    },
+    "boolq": {
+      "examples": 3270,
+      "choices": 2,
+      "random": 0.5,
+      "note": "reading comprehension yes/no"
+    },
+    "hellaswag": {
+      "examples": 10042,
+      "choices": 4,
+      "random": 0.25,
+      "note": "sentence completion / commonsense"
+    },
+    "sciq": {
+      "examples": 1000,
+      "choices": 4,
+      "random": 0.25,
+      "note": "science Q&A WITH support passage (open-book, lm-eval-harness compatible)"
+    }
+  },
+  "evaluated_at_utc": "2026-05-06",
+  "note": "WinoGrande dropped (~50% across all models, dominated by noise at this training scale)",
+  "results": [
+    {
+      "tier": "~100M",
+      "label": "SmolLM2-135M",
+      "internal_name": "smollm2_135M",
+      "params_M": 135,
+      "val_loss": 3.0104880332946777,
+      "best_iter": 100000,
+      "benchmarks": {
+        "arc_easy": {
+          "accuracy": 0.4,
+          "correct": 228,
+          "total": 570,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "arc_challenge": {
+          "accuracy": 0.27759197324414714,
+          "correct": 83,
+          "total": 299,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "boolq": {
+          "accuracy": 0.5880733944954128,
+          "correct": 1923,
+          "total": 3270,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "hellaswag": {
+          "accuracy": 0.31318462457677754,
+          "correct": 3145,
+          "total": 10042,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "sciq": {
+          "accuracy": 0.689,
+          "correct": 689,
+          "total": 1000,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "lm-eval-harness compatible (per-choice ctx for WG; support+question for SciQ)"
+        }
+      }
+    },
+    {
+      "tier": "~100M",
+      "label": "Pythia-160M",
+      "internal_name": "pythia_160M",
+      "params_M": 160,
+      "val_loss": 3.0438430309295654,
+      "best_iter": 99000,
+      "benchmarks": {
+        "arc_easy": {
+          "accuracy": 0.3701754385964912,
+          "correct": 211,
+          "total": 570,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "arc_challenge": {
+          "accuracy": 0.23411371237458195,
+          "correct": 70,
+          "total": 299,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "boolq": {
+          "accuracy": 0.5605504587155963,
+          "correct": 1833,
+          "total": 3270,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "hellaswag": {
+          "accuracy": 0.29994025094602667,
+          "correct": 3012,
+          "total": 10042,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "sciq": {
+          "accuracy": 0.697,
+          "correct": 697,
+          "total": 1000,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "lm-eval-harness compatible (per-choice ctx for WG; support+question for SciQ)"
+        }
+      }
+    },
+    {
+      "tier": "~100M",
+      "label": "LLMForge-Acc-123M",
+      "internal_name": "nsga_g22_e_123M",
+      "params_M": 123,
+      "val_loss": 3.0029261112213135,
+      "best_iter": 87500,
+      "benchmarks": {
+        "arc_easy": {
+          "accuracy": 0.4017543859649123,
+          "correct": 229,
+          "total": 570,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "arc_challenge": {
+          "accuracy": 0.23076923076923078,
+          "correct": 69,
+          "total": 299,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "boolq": {
+          "accuracy": 0.5712538226299694,
+          "correct": 1868,
+          "total": 3270,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "hellaswag": {
+          "accuracy": 0.31428002389962156,
+          "correct": 3156,
+          "total": 10042,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "sciq": {
+          "accuracy": 0.682,
+          "correct": 682,
+          "total": 1000,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "lm-eval-harness compatible (per-choice ctx for WG; support+question for SciQ)"
+        }
+      }
+    },
+    {
+      "tier": "~100M",
+      "label": "LLMForge-Compact-106M",
+      "internal_name": "nsga_g40r_a_106M",
+      "params_M": 106,
+      "val_loss": 3.0366382598876953,
+      "best_iter": 97500,
+      "benchmarks": {
+        "arc_easy": {
+          "accuracy": 0.3894736842105263,
+          "correct": 222,
+          "total": 570,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "arc_challenge": {
+          "accuracy": 0.23411371237458195,
+          "correct": 70,
+          "total": 299,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "boolq": {
+          "accuracy": 0.4764525993883792,
+          "correct": 1558,
+          "total": 3270,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "hellaswag": {
+          "accuracy": 0.30342561242780325,
+          "correct": 3047,
+          "total": 10042,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "sciq": {
+          "accuracy": 0.707,
+          "correct": 707,
+          "total": 1000,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "lm-eval-harness compatible (per-choice ctx for WG; support+question for SciQ)"
+        }
+      }
+    },
+    {
+      "tier": "~300M",
+      "label": "SmolLM2-360M",
+      "internal_name": "smollm2_360M",
+      "params_M": 362,
+      "val_loss": 2.831376552581787,
+      "best_iter": 100000,
+      "benchmarks": {
+        "arc_easy": {
+          "accuracy": 0.43859649122807015,
+          "correct": 250,
+          "total": 570,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "arc_challenge": {
+          "accuracy": 0.2842809364548495,
+          "correct": 85,
+          "total": 299,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "boolq": {
+          "accuracy": 0.6113149847094801,
+          "correct": 1999,
+          "total": 3270,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "hellaswag": {
+          "accuracy": 0.36217884883489343,
+          "correct": 3637,
+          "total": 10042,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "sciq": {
+          "accuracy": 0.721,
+          "correct": 721,
+          "total": 1000,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "lm-eval-harness compatible (per-choice ctx for WG; support+question for SciQ)"
+        }
+      }
+    },
+    {
+      "tier": "~300M",
+      "label": "Qwen-0.5B",
+      "internal_name": "qwen_0_5B",
+      "params_M": 402,
+      "val_loss": 2.8212716579437256,
+      "best_iter": 97500,
+      "benchmarks": {
+        "arc_easy": {
+          "accuracy": 0.4192982456140351,
+          "correct": 239,
+          "total": 570,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "arc_challenge": {
+          "accuracy": 0.25752508361204013,
+          "correct": 77,
+          "total": 299,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "boolq": {
+          "accuracy": 0.5495412844036697,
+          "correct": 1797,
+          "total": 3270,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "hellaswag": {
+          "accuracy": 0.36367257518422624,
+          "correct": 3652,
+          "total": 10042,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "sciq": {
+          "accuracy": 0.716,
+          "correct": 716,
+          "total": 1000,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "lm-eval-harness compatible (per-choice ctx for WG; support+question for SciQ)"
+        }
+      }
+    },
+    {
+      "tier": "~300M",
+      "label": "LLMForge-Acc-347M",
+      "internal_name": "nsga_from_sm2_best3_347M",
+      "params_M": 347,
+      "val_loss": 2.7983129024505615,
+      "best_iter": 100000,
+      "benchmarks": {
+        "arc_easy": {
+          "accuracy": 0.41754385964912283,
+          "correct": 238,
+          "total": 570,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "arc_challenge": {
+          "accuracy": 0.26755852842809363,
+          "correct": 80,
+          "total": 299,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "boolq": {
+          "accuracy": 0.5743119266055046,
+          "correct": 1878,
+          "total": 3270,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "hellaswag": {
+          "accuracy": 0.3695478988249353,
+          "correct": 3711,
+          "total": 10042,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "sciq": {
+          "accuracy": 0.747,
+          "correct": 747,
+          "total": 1000,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "lm-eval-harness compatible (per-choice ctx for WG; support+question for SciQ)"
+        }
+      }
+    },
+    {
+      "tier": "~300M",
+      "label": "LLMForge-Eco-294M",
+      "internal_name": "nsga_g30_best3_294M",
+      "params_M": 294,
+      "val_loss": 2.8329198360443115,
+      "best_iter": 97500,
+      "benchmarks": {
+        "arc_easy": {
+          "accuracy": 0.43508771929824563,
+          "correct": 248,
+          "total": 570,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "arc_challenge": {
+          "accuracy": 0.2842809364548495,
+          "correct": 85,
+          "total": 299,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "boolq": {
+          "accuracy": 0.5678899082568807,
+          "correct": 1857,
+          "total": 3270,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "hellaswag": {
+          "accuracy": 0.3632742481577375,
+          "correct": 3648,
+          "total": 10042,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "sciq": {
+          "accuracy": 0.711,
+          "correct": 711,
+          "total": 1000,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "lm-eval-harness compatible (per-choice ctx for WG; support+question for SciQ)"
+        }
+      }
+    },
+    {
+      "tier": "~300M",
+      "label": "LLMForge-Fast-365M",
+      "internal_name": "nsga_g30_best1_365M",
+      "params_M": 365,
+      "val_loss": 3.1623172760009766,
+      "best_iter": 92500,
+      "benchmarks": {
+        "arc_easy": {
+          "accuracy": 0.4087719298245614,
+          "correct": 233,
+          "total": 570,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "arc_challenge": {
+          "accuracy": 0.27424749163879597,
+          "correct": 82,
+          "total": 299,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "boolq": {
+          "accuracy": 0.6091743119266055,
+          "correct": 1992,
+          "total": 3270,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "hellaswag": {
+          "accuracy": 0.36496713802031466,
+          "correct": 3665,
+          "total": 10042,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "shared-context length-normalized"
+        },
+        "sciq": {
+          "accuracy": 0.719,
+          "correct": 719,
+          "total": 1000,
+          "split": "validation",
+          "length_norm": true,
+          "block_size": 1024,
+          "scoring_convention": "lm-eval-harness compatible (per-choice ctx for WG; support+question for SciQ)"
+        }
+      }
+    }
+  ]
+}

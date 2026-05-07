@@ -17,6 +17,9 @@ the surrogate during search.
 llmforge/         Search engine, surrogate, evaluators, hardware configs.
 llmforge_train/   Transformer training code with IHA support.
 example_scripts/  Self-contained reproduction examples (run on one workstation).
+paper_artifacts/  Per-model architecture specs and benchmark JSONs for the 9
+                  FineWeb-Edu-10BT trained models reported in Table 2 of the
+                  paper. Eval harness and provenance table are also bundled.
 ```
 
 ## Quick start
@@ -122,6 +125,7 @@ bash script/finetune_gemmini_paramsloss.bash
 | t-SNE embedding figure | `python llmforge/paper_plot/predictor_verify/embeddings_tsne.py` |
 | Architectural fingerprint figure | `python llmforge/paper_plot/pareto_trends/pareto_trends.py` |
 | Search-strategy ablation figure | `bash example_scripts/04_search_ablation_seed_sweep.bash && bash example_scripts/05_plot_search_ablation_multi_seed.bash` |
+| Scaled-training validation table (Table 2) | See `paper_artifacts/README.md` — each of the 9 trained models has its `arch.yaml`, `best_val_loss_and_iter.txt`, and per-benchmark eval JSON (ARC-E, ARC-C, BoolQ, HellaSwag, SciQ) bundled. The full eval harness and a `COMPARISON_TABLE.md` are in `paper_artifacts/results/` and `paper_artifacts/scripts/`. |
 
 The Forge-DSE searches that produce the multi-substrate Pareto fronts
 are run by `llmforge/script/finetune_*_paramsloss.bash` (one script per
@@ -145,6 +149,15 @@ are deferred to the supplementary material.
   (`llmforge/reference_archs/`).
 - Plot scripts under `llmforge/paper_plot/` that regenerate the
   predictor-verification, t-SNE, and architectural fingerprint figures.
+- **Paper-artifact bundle** (`paper_artifacts/`) for the 9 FineWeb-Edu-10BT
+  trained models in Table 2. Each model directory contains its `arch.yaml`
+  spec, a `best_val_loss_and_iter.txt` summary, and per-benchmark eval JSONs
+  (ARC-Easy, ARC-Challenge, BoolQ, HellaSwag, SciQ). The aggregate
+  `results/all_benchmarks_results.json`, the human-readable
+  `results/COMPARISON_TABLE.md`, and the eval scripts under
+  `scripts/` are also included. No model weights are bundled (they would
+  exceed the proxy's size budget); the per-model `arch.yaml` is sufficient
+  to retrain from scratch on a single H100.
 
 **Not included (regenerable or external):**
 - Timeloop and its dependencies. Install separately from

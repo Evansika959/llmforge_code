@@ -1,0 +1,13 @@
+[
+  {
+    "split": "validation",
+    "total": 1000,
+    "correct": 707,
+    "accuracy": 0.707,
+    "skipped": 0,
+    "block_size": 1024,
+    "length_norm": true,
+    "benchmark": "sciq",
+    "scoring_convention": "lm-eval-harness compatible (per-choice ctx for WG; support+question for SciQ)"
+  }
+]

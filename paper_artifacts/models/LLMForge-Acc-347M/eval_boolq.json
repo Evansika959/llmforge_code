@@ -1,0 +1,12 @@
+[
+  {
+    "split": "validation",
+    "total": 3270,
+    "correct": 1878,
+    "accuracy": 0.5743119266055046,
+    "skipped": 0,
+    "block_size": 1024,
+    "length_norm": true,
+    "benchmark": "boolq"
+  }
+]

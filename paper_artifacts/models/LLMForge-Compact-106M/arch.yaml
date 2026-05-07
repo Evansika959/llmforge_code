@@ -1,0 +1,24 @@
+# Gen40 real_train+timeloop pick main[10] -> g40r_a
+# n_embd=576, 20 active layers (of 40), search_params=106.21M
+# Search-time real_train val_loss: 2.8703
+# Rotary + peri-LN + SwiGLU recipe (block_size override 512->1024)
+- n_layer: 20
+  n_embd: 576
+  block_size: 1024
+  use_concat_heads: true
+  mlp_variant: swiglu
+  use_gradient_checkpointing: true
+  use_abs_pos_embeddings: false
+  use_rotary_embeddings: true
+  bias: false
+  wte_weight_tying: true
+  use_pre_ln: true
+  use_peri_ln: true
+  use_post_ln: false
+  n_head_layerlist:            [1, 4, 8, 4, 8, 8, 8, 9, 9, 4, 4, 4, 4, 8, 8, 8, 8, 8, 8, 8]
+  n_kv_group_layerlist:        [1, 4, 4, 4, 1, 2, 1, 1, 1, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]
+  mlp_size_layerlist:          [1024, 3584, 2560, 1536, 1024, 1536, 1024, 1536, 1536, 2560, 2560, 1024, 1536, 2560, 2048, 1536, 1536, 1536, 2048, 2048]
+  n_qk_head_dim_layerlist:     [64, 160, 96, 64, 160, 64, 128, 160, 160, 32, 96, 64, 64, 32, 64, 64, 64, 64, 64, 64]
+  n_v_head_dim_layerlist:      [64, 64, 64, 64, 64, 64, 96, 96, 96, 32, 32, 64, 64, 64, 32, 96, 32, 32, 96, 96]
+  n_cproj_layerlist:           [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+  attention_variant_layerlist: [identity, infinite, infinite, infinite, infinite, infinite, infinite, infinite, infinite, infinite, infinite, identity, identity, infinite, infinite, infinite, infinite, infinite, infinite, infinite]

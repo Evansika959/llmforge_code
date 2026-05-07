@@ -1,0 +1,24 @@
+# NSGA-fromSM2-Best3: Gen19 Individual#0, NSGA search
+# Eval: val_loss=2.6297 (search proxy), params=347M, n_embd=960, 31 active of 40 layers
+# Use block_size=1024 for training (not 512 from search)
+- n_layer: 31
+  n_embd: 960
+  block_size: 1024
+  use_concat_heads: true
+  mlp_variant: swiglu
+  use_gradient_checkpointing: true
+  use_abs_pos_embeddings: false
+  use_rotary_embeddings: true
+  bias: false
+  wte_weight_tying: true
+  use_pre_ln: true
+  use_peri_ln: true
+  use_post_ln: false
+  n_head_layerlist:        [15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 12, 15, 15, 15, 10, 12, 15, 12, 15, 15, 15, 15]
+  n_kv_group_layerlist:    [5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  5,  3,  5,  3,  3,  5,  4,  5,  5,  5,  2,  3,  5,  3,  5,  5,  5,  5]
+  mlp_size_layerlist:      [2048, 3584, 2560, 2560, 2560, 2560, 2560, 2560, 4096, 2560, 2560, 2560, 2560, 2560, 2560, 2560, 3584, 2560, 2560, 1536, 3072, 2560, 2560, 2560, 2560, 2560, 2560, 2560, 2560, 2560, 2560]
+  n_qk_head_dim_layerlist: [64, 64, 64, 64, 64, 96, 64, 64, 64, 64, 96, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 96, 64, 64, 64, 64, 64, 64, 64, 64]
+  n_v_head_dim_layerlist:  [64, 64, 64, 64, 96, 64, 32, 96, 64, 64, 64, 64, 64, 64, 64, 96, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 32, 64, 64, 64]
+  n_cproj_layerlist:       [1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1,  1]
+  attention_variant_layerlist:
+    [identity, infinite, infinite, infinite, infinite, infinite, identity, identity, infinite, infinite, infinite, infinite, infinite, infinite, infinite, infinite, infinite, identity, infinite, infinite, identity, infinite, infinite, infinite, infinite, infinite, infinite, infinite, infinite, infinite, infinite]

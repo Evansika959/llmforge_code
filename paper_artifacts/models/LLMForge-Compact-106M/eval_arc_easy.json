@@ -1,0 +1,12 @@
+[
+  {
+    "split": "validation",
+    "total": 570,
+    "correct": 222,
+    "accuracy": 0.3894736842105263,
+    "skipped": 0,
+    "block_size": 1024,
+    "length_norm": true,
+    "benchmark": "arc-easy"
+  }
+]

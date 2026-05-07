@@ -1,0 +1,23 @@
+# Gen30 pick ind[6] -> g30_best3
+# ~294.1M params, n_embd=960, 27 active layers, val_proxy=2.6490
+# Rotary + peri-LN + SwiGLU (block_size=1024 override vs search-time 512)
+- n_layer: 27
+  n_embd: 960
+  block_size: 1024
+  use_concat_heads: true
+  mlp_variant: swiglu
+  use_gradient_checkpointing: true
+  use_abs_pos_embeddings: false
+  use_rotary_embeddings: true
+  bias: false
+  wte_weight_tying: true
+  use_pre_ln: true
+  use_peri_ln: true
+  use_post_ln: false
+  n_head_layerlist:            [15, 15, 15, 15, 12, 15, 15, 15, 12, 15, 15, 15, 15, 15, 15, 15, 15, 12, 15, 8, 4, 8, 8, 15, 12, 15, 15]
+  n_kv_group_layerlist:        [5, 5, 5, 5, 4, 5, 3, 5, 4, 5, 5, 5, 5, 3, 5, 5, 5, 4, 5, 2, 4, 4, 4, 5, 3, 5, 5]
+  mlp_size_layerlist:          [1024, 3584, 2560, 2560, 3072, 2560, 2048, 2560, 2560, 2560, 2560, 2560, 2048, 2048, 3072, 2560, 2560, 2560, 2560, 2560, 2560, 2560, 2560, 2560, 2560, 2560, 3072]
+  n_qk_head_dim_layerlist:     [64, 64, 64, 96, 64, 64, 32, 64, 96, 32, 64, 64, 64, 32, 32, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64]
+  n_v_head_dim_layerlist:      [64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 128, 128, 64, 64, 32, 64, 64, 64, 64, 32, 64, 32, 64]
+  n_cproj_layerlist:           [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+  attention_variant_layerlist: [identity, infinite, infinite, infinite, infinite, infinite, infinite, infinite, infinite, infinite, infinite, infinite, identity, identity, infinite, identity, infinite, infinite, infinite, infinite, infinite, infinite, infinite, infinite, infinite, infinite, infinite]

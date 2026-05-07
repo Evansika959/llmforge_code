@@ -1,0 +1,12 @@
+[
+  {
+    "split": "validation",
+    "total": 299,
+    "correct": 82,
+    "accuracy": 0.27424749163879597,
+    "skipped": 0,
+    "block_size": 1024,
+    "length_norm": true,
+    "benchmark": "arc-challenge"
+  }
+]
