@@ -44,9 +44,9 @@ set -euo pipefail
 EXAMPLE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$EXAMPLE_DIR/.." && pwd)"
 LLMFORGE_DIR="$REPO_ROOT/llmforge"
-EVO_GPT_DIR="$REPO_ROOT/evo_gpt"
+LLMFORGE_TRAIN_DIR="$REPO_ROOT/llmforge_train"
 
-export PYTHONPATH="$EVO_GPT_DIR:$LLMFORGE_DIR:${PYTHONPATH:-}"
+export PYTHONPATH="$LLMFORGE_TRAIN_DIR:$LLMFORGE_DIR:${PYTHONPATH:-}"
 cd "$LLMFORGE_DIR"
 
 # ── Configuration (overridable via environment) ──────────────────────────

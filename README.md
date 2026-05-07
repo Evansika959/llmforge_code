@@ -14,10 +14,9 @@ the surrogate during search.
 ## Repository layout
 
 ```
-llmforge/        Search engine, surrogate, evaluators, hardware configs.
-evo_gpt/         Transformer training code with IHA support.
-example_scripts/ Self-contained reproduction examples (run on one workstation).
-paper_figures/   Plot scripts for the figures and tables in the paper.
+llmforge/         Search engine, surrogate, evaluators, hardware configs.
+llmforge_train/   Transformer training code with IHA support.
+example_scripts/  Self-contained reproduction examples (run on one workstation).
 ```
 
 ## Quick start
@@ -29,25 +28,76 @@ pip install -r requirements.txt
 # 2. Run the smoke-test example (verifies the surrogate + search loop in <1 min)
 bash example_scripts/03_search_smoke.sh
 
-# 3. Reproduce the predictor-verification table from the paper
+# 3. Reproduce the predictor-verification table from the paper (Table 1)
 bash example_scripts/01_predictor_verification.sh
 
-# 4. Render the search-strategy ablation figure (after running the five
-#    NSGA-II searches whose checkpoints feed it; see the script header)
-bash example_scripts/02_search_strategy_ablation.bash
+# 4. Run the multi-seed NSGA-II search-strategy ablation, then render the figure
+bash example_scripts/04_search_ablation_seed_sweep.bash
+bash example_scripts/05_plot_search_ablation_multi_seed.bash
+
+# 5. Local NSGA-II search on a Timeloop substrate (Gemmini / Eyeriss / FLAT / ...).
+#    Requires Timeloop + Accelergy locally; see "Optional dependencies" below.
+bash example_scripts/06_local_substrate_search.bash gemmini
 ```
 
-The two scripts above are self-contained and do not need a remote
-cluster, ZEUS, or Timeloop. See `example_scripts/README.md` for the
-full list. To launch the full multi-substrate searches that produce the
-paper's Pareto fronts, use the production scripts in `llmforge/script/`
-after configuring remote hosts (see `llmforge/script/examples/env.sh`).
+Steps 1–4 are self-contained and do not need a remote cluster, ZEUS, or
+Timeloop. Step 5 needs Timeloop + Accelergy locally. See
+`example_scripts/README.md` for the full list. To launch the full
+multi-substrate searches that produce the paper's Pareto fronts, use the
+production scripts in `llmforge/script/finetune_*_paramsloss.bash` after
+configuring a remote H100 cluster (each script's header lists the
+prerequisites).
+
+## Optional dependencies
+
+The example scripts in steps 1–4 above need only the packages in
+`requirements.txt`. The substrate search in step 5 and the production
+scripts in `llmforge/script/` additionally require:
+
+### Timeloop and Accelergy (only for `--hw_mode timeloop`)
+
+[Timeloop](https://timeloop.csail.mit.edu/) is the analytical mapper used
+to evaluate Gemmini, Eyeriss, FLAT, and the single-chip DXE substrate.
+[Accelergy](https://accelergy.mit.edu/) provides the energy estimation
+tables Timeloop reads from. The Python front-end `timeloopfe` wraps both.
+
+Install paths:
+
+```bash
+# Python front-end + accelergy energy tables (PyPI)
+pip install timeloopfe accelergy
+
+# Timeloop CLI binaries (timeloop-mapper, timeloop-model, timeloop-metrics).
+# The simplest path is the upstream Docker image:
+docker pull mitdlh/timeloop-accelergy-pytorch:latest
+# Or build from source: https://github.com/Accelergy-Project/timeloop-accelergy-tutorials
+
+# Verify
+which timeloop-mapper accelergy
+python -c "import timeloopfe.v4 as tl; print('timeloopfe ok')"
+```
+
+If you see `ImportError: cannot import name 'get_energy' from 'model'` from
+Accelergy when running a search, that is a `PYTHONPATH` collision between
+this repo's `llmforge_train/model.py` and an Accelergy ADC plug-in. The
+HW evaluator in `llmforge/hw_exp.py` clears `PYTHONPATH` for the Timeloop
+subprocess to avoid this; if you reproduce the issue from a custom entry
+point, pass `environment={"PYTHONPATH": ""}` to `timeloopfe.call_mapper`.
+
+### ZEUS (only for `--hw_mode zeus`, GPU energy measurement)
+
+```bash
+pip install zeus-ml
+```
+
+ZEUS reads NVML energy counters on a local NVIDIA GPU. We tested on an
+A100-SXM4-40GB with driver 550.90.07, CUDA 12.4, and PyTorch 2.6.0.
 
 ## Manual setup
 
 ```bash
-export EVO_GPT_DIR=$(pwd)/evo_gpt
-export PYTHONPATH=$EVO_GPT_DIR:$(pwd)/llmforge:$PYTHONPATH
+export LLMFORGE_TRAIN_DIR=$(pwd)/llmforge_train
+export PYTHONPATH=$LLMFORGE_TRAIN_DIR:$(pwd)/llmforge:$PYTHONPATH
 
 # Train Forge-Former from the bundled labels
 cd llmforge
@@ -59,7 +109,7 @@ python -m surrogate.train \
     --epochs 200 --batch_size 32 --lr 1e-4 \
     --test_ratio 0.2 --seed 100
 
-# 4. Run an NSGA-II search with the Gemmini Timeloop substrate
+# Run an NSGA-II search with the Gemmini Timeloop substrate
 bash script/finetune_gemmini_paramsloss.bash
 ```
 
@@ -67,19 +117,17 @@ bash script/finetune_gemmini_paramsloss.bash
 
 | Paper artifact | Reproduce with |
 |---|---|
-| Forge-Former vs MLP / RF table | `bash llmforge/paper_plot/predictor_verify/reproduce.sh` |
+| Forge-Former vs MLP / RF table (Table 1) | `bash llmforge/paper_plot/predictor_verify/reproduce.sh` |
 | HW-GPT-Bench gpt_l comparison | `bash llmforge/paper_plot/hw_gpt_bench/reproduce.sh` |
 | t-SNE embedding figure | `python llmforge/paper_plot/predictor_verify/embeddings_tsne.py` |
-| Per-substrate Pareto fronts | `bash paper_figures/plot_substrate_pareto_4row.bash` |
 | Architectural fingerprint figure | `python llmforge/paper_plot/pareto_trends/pareto_trends.py` |
-| Per-substrate full search summaries | `bash paper_figures/plot_substrate_summaries.bash` |
-| Search recipe ablations | `bash paper_figures/plot_ablations_combined.bash` |
+| Search-strategy ablation figure | `bash example_scripts/04_search_ablation_seed_sweep.bash && bash example_scripts/05_plot_search_ablation_multi_seed.bash` |
 
-The Forge-DSE searches that produce the multi-substrate Pareto fronts are
-run by `llmforge/script/finetune_*_paramsloss.bash` (one script per
+The Forge-DSE searches that produce the multi-substrate Pareto fronts
+are run by `llmforge/script/finetune_*_paramsloss.bash` (one script per
 ZEUS / Gemmini / Eyeriss / FLAT substrate). The rDXE multi-chip ring-substrate
-search and the rDXE simulator are described in the paper appendix and are
-deferred to the supplementary material.
+search and the rDXE simulator are described in the paper appendix and
+are deferred to the supplementary material.
 
 ## What is included vs not
 
@@ -95,7 +143,8 @@ deferred to the supplementary material.
 - Reference architecture YAMLs for SmolLM2-135M, SmolLM2-360M, Pythia-160M,
   Qwen-0.5B, GPT-2-small, and the LLMForge-discovered picks
   (`llmforge/reference_archs/`).
-- Plot scripts that regenerate every figure in the paper.
+- Plot scripts under `llmforge/paper_plot/` that regenerate the
+  predictor-verification, t-SNE, and architectural fingerprint figures.
 
 **Not included (regenerable or external):**
 - Timeloop and its dependencies. Install separately from
@@ -103,7 +152,7 @@ deferred to the supplementary material.
 - ZEUS energy-measurement library. Install separately via `pip install zeus`
   before running Backend-A GPU measurements.
 - Pretraining datasets (MiniPile, FineWeb-Edu-10BT). These are publicly
-  available on the HuggingFace Hub; preparation scripts are in `evo_gpt/`.
+  available on the HuggingFace Hub; preparation scripts are in `llmforge_train/`.
 - Per-generation NSGA checkpoints from the production search runs. Each search
   takes between 6 and 24 hours on a single A100 plus an 8-host H100 active
   learning pool. To reproduce a final Pareto front, run the corresponding

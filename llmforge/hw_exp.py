@@ -264,7 +264,13 @@ def _run_mapper(out_dir: str, problem_file: str, cfg: ArchConfig,
         if not os.path.exists(log_path):
             with open(log_path, 'w') as f:
                 f.write("")
-        tl.call_mapper(spec, output_dir=out_dir, log_to=log_path)
+        # Clear PYTHONPATH for the subprocess so accelergy's plug-ins (which
+        # do `from model import ...` etc.) resolve their own local modules,
+        # not whatever happens to be on the parent's sys.path. Without this,
+        # llmforge_train/model.py shadows the accelergy-adc-plug-in's local
+        # model.py and accelergy crashes with an ImportError.
+        tl.call_mapper(spec, output_dir=out_dir, log_to=log_path,
+                       environment={"PYTHONPATH": ""})
     return output_file
 
 

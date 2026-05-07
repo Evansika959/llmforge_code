@@ -276,7 +276,7 @@ def main():
 
     # update the working directory on remote hosts
     trainer = RemoteTrainer(hosts=hosts, user=user, key_filename=key_filename)
-    trainer.perform_git_pull(remote_work_dir=os.environ.get("EVO_GPT_DIR", os.path.expanduser("~/evo_gpt")))
+    trainer.perform_git_pull(remote_work_dir=os.environ.get("LLMFORGE_TRAIN_DIR", os.path.expanduser("~/llmforge_train")))
 
     # run_time = time.strftime("%m%d_%H%M", time.localtime())
     n_gen = args.generations

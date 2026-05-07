@@ -130,7 +130,7 @@ def build_sw_evaluator(args, device, exp_name: str):
             user=args.realtrain_user,
             ssh_key=os.path.expanduser(args.realtrain_ssh_key),
             conda_env=args.realtrain_conda_env,
-            remote_evo_gpt_dir=args.realtrain_remote_evo_gpt_dir,
+            remote_llmforge_train_dir=args.realtrain_remote_llmforge_train_dir,
             max_iters=args.realtrain_max_iters,
             timeout=args.realtrain_timeout,
             poll_interval=args.realtrain_poll_interval,
@@ -146,7 +146,7 @@ def build_sw_evaluator(args, device, exp_name: str):
             user=args.realtrain_user,
             ssh_key=os.path.expanduser(args.realtrain_ssh_key),
             conda_env=args.realtrain_conda_env,
-            remote_evo_gpt_dir=args.realtrain_remote_evo_gpt_dir,
+            remote_llmforge_train_dir=args.realtrain_remote_llmforge_train_dir,
             max_iters=args.realtrain_max_iters,
             timeout=args.realtrain_timeout,
             poll_interval=args.realtrain_poll_interval,
@@ -398,8 +398,8 @@ def main():
     p.add_argument("--realtrain_ssh_key", type=str,
                    default="~/.ssh/id_rsa")
     p.add_argument("--realtrain_conda_env", type=str, default="llmforge")
-    p.add_argument("--realtrain_remote_evo_gpt_dir", type=str,
-                   default="${EVO_GPT_DIR:-$HOME/evo_gpt}")
+    p.add_argument("--realtrain_remote_llmforge_train_dir", type=str,
+                   default="${LLMFORGE_TRAIN_DIR:-$HOME/llmforge_train}")
     p.add_argument("--realtrain_max_iters", type=int, default=20000)
     p.add_argument("--realtrain_timeout", type=int, default=16000)
     p.add_argument("--realtrain_poll_interval", type=int, default=120,
@@ -430,7 +430,7 @@ def main():
                    choices=["bf16", "fp16", "fp32"])
     p.add_argument("--no_kv_cache", action="store_true",
                    help="hw_mode=zeus only: disable the measurement-only "
-                        "KV-cache shim and fall back to Evo_GPT's "
+                        "KV-cache shim and fall back to LLMForge training's "
                         "recomputing generate(). Default is cached, which "
                         "matches production decode and avoids inflating "
                         "tpot/energy with unnecessary recompute.")

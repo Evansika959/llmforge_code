@@ -1,7 +1,7 @@
 """Measurement-only KV cache shim for ZEUS HW eval.
 
-Adds proper KV-cached decode to Evo_GPT for power/energy measurement only.
-DOES NOT modify Evo_GPT itself. Works by:
+Adds proper KV-cached decode to LLMForge training for power/energy measurement only.
+DOES NOT modify LLMForge training itself. Works by:
 
   1. Monkey-patching each `InfiniteHeadAttention` layer's `forward()` with a
      mode-aware version that supports "capture" (during prefill) and
@@ -12,7 +12,7 @@ DOES NOT modify Evo_GPT itself. Works by:
 
 Why this matters
 ----------------
-Evo_GPT's `model.generate()` recomputes the full prefill+generated context
+LLMForge training's `model.generate()` recomputes the full prefill+generated context
 on every step (no `past_key_values`). For a NSGA-II co-search that uses
 ZEUS to measure decode-time power and energy, that means:
 
@@ -76,13 +76,13 @@ class UnsupportedKVCache(Exception):
 
 
 # --------------------------------------------------------------------------
-# IHA detection (lazy; no import-time dependency on Evo_GPT)
+# IHA detection (lazy; no import-time dependency on LLMForge training)
 # --------------------------------------------------------------------------
 
 def _is_iha(module: torch.nn.Module) -> bool:
     """Duck-type check: an IHA has c_attn_q/k/v + n_head + n_kv_group +
     n_qk_head_dim + n_v_head_dim + _expand_kv. Avoids importing the
-    Evo_GPT class to keep this shim decoupled."""
+    LLMForge training class to keep this shim decoupled."""
     needed = ("c_attn_q", "c_attn_k", "c_attn_v",
               "n_head", "n_kv_group", "n_qk_head_dim", "n_v_head_dim",
               "_expand_kv")

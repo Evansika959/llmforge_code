@@ -61,7 +61,7 @@ class SwRealTrain:
     """Synchronous real-training evaluator. NSGA blocks until all jobs finish."""
 
     def __init__(self, *, hosts_file: str, user: str, ssh_key: str,
-                 conda_env: str, remote_evo_gpt_dir: str,
+                 conda_env: str, remote_llmforge_train_dir: str,
                  max_iters: int, timeout: int,
                  exp_name: str, dataset: str = "minipile",
                  payload_dir: str = "train",
@@ -72,7 +72,7 @@ class SwRealTrain:
         self.user = user
         self.ssh_key = ssh_key
         self.conda_env = conda_env
-        self.remote_evo_gpt_dir = remote_evo_gpt_dir
+        self.remote_llmforge_train_dir = remote_llmforge_train_dir
         self.max_iters = int(max_iters)
         self.timeout = int(timeout)
         self.poll_interval = int(poll_interval)
@@ -85,7 +85,7 @@ class SwRealTrain:
         from remote_trainer import RemoteTrainer
         self._RemoteTrainer = RemoteTrainer
         trainer = RemoteTrainer(hosts=self.hosts, user=user, key_filename=ssh_key)
-        trainer.perform_git_pull(remote_work_dir=remote_evo_gpt_dir)
+        trainer.perform_git_pull(remote_work_dir=remote_llmforge_train_dir)
 
     def set_gen(self, gen: int) -> None:
         """Tag subsequent payloads with the current generation index."""
@@ -104,7 +104,7 @@ class SwRealTrain:
         log.info(f"[real-train] submit gen{gen}: {len(inds)} archs, "
                  f"max_iters={self.max_iters}, timeout={self.timeout}s")
         ok = trainer.submit_job(
-            path_to_yaml=payload, remote_work_dir=self.remote_evo_gpt_dir,
+            path_to_yaml=payload, remote_work_dir=self.remote_llmforge_train_dir,
             dir_name=dir_name, conda_env=self.conda_env,
             max_iters=self.max_iters, dataset=self.dataset,
         )

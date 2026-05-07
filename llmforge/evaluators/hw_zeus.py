@@ -36,7 +36,7 @@ class HwZeus:
         use_kv_cache: route decode through the measurement-only KV-cache
             shim (zeus_kv_cache) so per-token compute matches production
             cached decode (single-query SDPA against cached K, V) instead
-            of Evo_GPT's recomputing generate(). Default True. Per-arch
+            of LLMForge training's recomputing generate(). Default True. Per-arch
             fallback to non-cached path is automatic if attach-time
             feature guards trip; that fact is surfaced in the per-arch
             result dict via `zeus_kv_cache_used` / `zeus_kv_cache_skip`.

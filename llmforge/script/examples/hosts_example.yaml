@@ -1,7 +1,7 @@
 # Example remote-host file for the active-learning real-train trainer.
 # Replace these placeholder IPs with the addresses of your H100 hosts.
 # The trainer SSHes to each host using --realtrain_user / --realtrain_ssh_key
-# and runs evo_gpt/train.py inside --realtrain_conda_env.
+# and runs llmforge_train/train.py inside --realtrain_conda_env.
 - 1.2.3.4
 - 1.2.3.5
 - 1.2.3.6

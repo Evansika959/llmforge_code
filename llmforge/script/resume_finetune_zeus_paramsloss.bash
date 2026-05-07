@@ -52,7 +52,7 @@ python -u run_cosearch.py \
     --realtrain_user ${USER:-anon} \
     --realtrain_ssh_key ~/.ssh/id_rsa \
     --realtrain_conda_env ${CONDA_ENV:-llmforge} \
-    --realtrain_remote_evo_gpt_dir ${EVO_GPT_DIR:-$HOME/evo_gpt} \
+    --realtrain_remote_llmforge_train_dir ${LLMFORGE_TRAIN_DIR:-$HOME/llmforge_train} \
     --realtrain_max_iters 20000 \
     --realtrain_timeout 16000 \
     --realtrain_poll_interval 600 \

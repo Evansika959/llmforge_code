@@ -146,7 +146,7 @@ def run_train_phase(ind_dict: Dict[str, Any], args) -> Dict[str, Any]:
         user=args.realtrain_user,
         ssh_key=os.path.expanduser(args.realtrain_ssh_key),
         conda_env=args.realtrain_conda_env,
-        remote_evo_gpt_dir=args.realtrain_remote_evo_gpt_dir,
+        remote_llmforge_train_dir=args.realtrain_remote_llmforge_train_dir,
         max_iters=args.max_iters,
         timeout=args.timeout,
         poll_interval=args.poll_interval,
@@ -274,8 +274,8 @@ def main():
     p.add_argument("--realtrain_user", type=str, default=os.environ.get("USER", "anon"))
     p.add_argument("--realtrain_ssh_key", type=str, default="~/.ssh/id_rsa")
     p.add_argument("--realtrain_conda_env", type=str, default="llmforge")
-    p.add_argument("--realtrain_remote_evo_gpt_dir", type=str,
-                   default="${EVO_GPT_DIR:-$HOME/evo_gpt}")
+    p.add_argument("--realtrain_remote_llmforge_train_dir", type=str,
+                   default="${LLMFORGE_TRAIN_DIR:-$HOME/llmforge_train}")
     p.add_argument("--max_iters", type=int, default=20000,
                    help="Matches the canonical 20k-iter recipe used by "
                         "the cosearch finetune scripts.")

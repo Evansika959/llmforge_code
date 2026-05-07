@@ -924,7 +924,7 @@ Examples:
     # --- Git pull on remote hosts (real training only) ---
     if not use_surrogate:
         trainer = RemoteTrainer(hosts=hosts, user=args.user, key_filename=args.key)
-        trainer.perform_git_pull(remote_work_dir=os.environ.get("EVO_GPT_DIR", os.path.expanduser("~/evo_gpt")))
+        trainer.perform_git_pull(remote_work_dir=os.environ.get("LLMFORGE_TRAIN_DIR", os.path.expanduser("~/llmforge_train")))
 
     # --- NSGA-II generation loop ---
     n_gen = args.generations

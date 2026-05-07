@@ -8,8 +8,8 @@
 # fallbacks if unset) so the same scripts work on any host without
 # hard-coded paths.
 
-# Path to the Evo_GPT training package on the local host.
-export EVO_GPT_DIR="${EVO_GPT_DIR:-$HOME/anon_llmforge/evo_gpt}"
+# Path to the LLMForge training training package on the local host.
+export LLMFORGE_TRAIN_DIR="${LLMFORGE_TRAIN_DIR:-$HOME/anon_llmforge/llmforge_train}"
 
 # Path to the LLMForge search package on the local host.
 export LLMFORGE_DIR="${LLMFORGE_DIR:-$HOME/anon_llmforge/llmforge}"
@@ -22,5 +22,5 @@ export SSH_KEY="${SSH_KEY:-$HOME/.ssh/id_rsa}"
 # Conda environment name on remote hosts.
 export CONDA_ENV="${CONDA_ENV:-llmforge}"
 
-# Make Evo_GPT and llmforge importable.
-export PYTHONPATH="$EVO_GPT_DIR:$LLMFORGE_DIR:${PYTHONPATH:-}"
+# Make LLMForge training and llmforge importable.
+export PYTHONPATH="$LLMFORGE_TRAIN_DIR:$LLMFORGE_DIR:${PYTHONPATH:-}"

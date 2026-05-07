@@ -5,7 +5,7 @@
 #   - 20,000 iters
 #   - dataset=minipile
 #   - 8-host remote cluster (script/examples/hosts_example.yaml)
-#   - llmforge conda env, ${EVO_GPT_DIR:-$HOME/evo_gpt}
+#   - llmforge conda env, ${LLMFORGE_TRAIN_DIR:-$HOME/llmforge_train}
 #   - 16,000 s per-job timeout, 600 s poll interval
 #
 # Wall-clock: ~1-3 h depending on cluster load. Output is a single
@@ -32,7 +32,7 @@ python -u bench_smollm2_baseline.py \
     --realtrain_user ${USER:-anon} \
     --realtrain_ssh_key ~/.ssh/id_rsa \
     --realtrain_conda_env ${CONDA_ENV:-llmforge} \
-    --realtrain_remote_evo_gpt_dir ${EVO_GPT_DIR:-$HOME/evo_gpt} \
+    --realtrain_remote_llmforge_train_dir ${LLMFORGE_TRAIN_DIR:-$HOME/llmforge_train} \
     --max_iters 20000 \
     --timeout 10000 \
     --poll_interval 600 \

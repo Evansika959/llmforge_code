@@ -513,7 +513,7 @@ class Population:
         # send the training work to worker nodes and wait for results
         train_yaml_path = self.to_yaml(save_path="train")
         trainer = RemoteTrainer(hosts=hosts, user=user, key_filename=key_filename)
-        trainer.submit_job(path_to_yaml=train_yaml_path, remote_work_dir=os.environ.get("EVO_GPT_DIR", os.path.expanduser("~/evo_gpt")), dir_name=run_dir_name, max_iters=max_iters, conda_env=conda_env, dataset=dataset)
+        trainer.submit_job(path_to_yaml=train_yaml_path, remote_work_dir=os.environ.get("LLMFORGE_TRAIN_DIR", os.path.expanduser("~/llmforge_train")), dir_name=run_dir_name, max_iters=max_iters, conda_env=conda_env, dataset=dataset)
         time.sleep(5)  # wait a bit before polling
         trainer.poll_jobs() 
         # start hw eval while waiting for training

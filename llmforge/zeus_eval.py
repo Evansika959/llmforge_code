@@ -1,7 +1,7 @@
 """Local A100-based HW evaluator using ZEUS.
 
 Given an NSGA Individual dict (`{"globals": ..., "layers": [...]}`), instantiate
-the corresponding Evo_GPT model with random weights, run prefill + decode on
+the corresponding LLMForge training model with random weights, run prefill + decode on
 the local A100 wrapped in a ZeusMonitor window, and return ttft / tpot /
 energy metrics matching the aux-dict schema consumed by NSGA.
 
@@ -10,7 +10,7 @@ compute shapes, which is what ZEUS measures.
 
 Expected metric shapes on an A100 (bf16, ~300M-param SmolLM2-scale arch):
   ttft_ms              ~20 – 80 ms   (single prefill forward)
-  tpot_ms              ~15 – 60 ms   (naive AR decode — no KV cache in Evo_GPT)
+  tpot_ms              ~15 – 60 ms   (naive AR decode — no KV cache in LLMForge training)
   energy_per_token_uJ  ~1000 – 4000 μJ
   power_W              ~100 – 300 W
 """
@@ -25,10 +25,10 @@ from typing import Any, Dict, List, Optional
 
 import torch
 
-# Make Evo_GPT importable
-_EVO_GPT = "${EVO_GPT_DIR:-$HOME/evo_gpt}"
-if _EVO_GPT not in sys.path:
-    sys.path.insert(0, _EVO_GPT)
+# Make LLMForge training importable
+_LLMFORGE_TRAIN = "${LLMFORGE_TRAIN_DIR:-$HOME/llmforge_train}"
+if _LLMFORGE_TRAIN not in sys.path:
+    sys.path.insert(0, _LLMFORGE_TRAIN)
 
 try:
     from zeus.monitor import ZeusMonitor
@@ -63,7 +63,7 @@ def _active_layers(ind: Dict[str, Any]) -> List[Dict[str, Any]]:
 def build_model_from_individual(ind: Dict[str, Any], block_size: int,
                                  device: torch.device, dtype: torch.dtype,
                                  mlp_variant: str = "swiglu") -> GPT:
-    """Instantiate an Evo_GPT model from an Individual dict, random weights.
+    """Instantiate an LLMForge training model from an Individual dict, random weights.
 
     `mlp_variant` defaults to "swiglu" to match `remote_trainer.py`'s
     `_FIXED_MODEL_OVERRIDES`, which pin `mlp_variant=swiglu` on every remote
@@ -96,7 +96,7 @@ def build_model_from_individual(ind: Dict[str, Any], block_size: int,
     v_ll      = _col("n_v_head_dim", None)
     cproj_ll  = _col("n_cproj", 1)
     attn_ll   = _col("attention_variant", "infinite")
-    # Evo_GPT's attention_dictionary recognizes "infinite" (IHA) and
+    # LLMForge training's attention_dictionary recognizes "infinite" (IHA) and
     # "identity" directly — pass through unchanged.
 
     cfg_kwargs = dict(
@@ -144,7 +144,7 @@ def measure_one(ind: Dict[str, Any],
     fall back to non-cached `model.generate()` and surface this in the
     result dict via `zeus_kv_cache_used: False` plus `zeus_kv_cache_skip`.
 
-    `use_kv_cache=False` reproduces the original behavior: Evo_GPT's
+    `use_kv_cache=False` reproduces the original behavior: LLMForge training's
     `generate()` recomputes the full prefill+generated context every
     step. This is useful as an A/B baseline but inflates tpot / energy
     per token and biases power toward prefill-style compute-bound

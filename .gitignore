@@ -102,15 +102,11 @@ llmforge/paper_plot/predictor_verify/table_a_aggregated.tex
 # =============================================================================
 # Rendered figures
 #   Plot scripts write PDFs/PNGs back into the repo. The figures themselves
-#   live in the paper repo, not here; everything emitted into example_scripts/
-#   or paper_figures/ is regenerable.
+#   live in the paper repo, not here; everything emitted is regenerable.
 # =============================================================================
 example_scripts/*.pdf
 example_scripts/*.png
 example_scripts/figs/
-paper_figures/*.pdf
-paper_figures/*.png
-paper_figures/figs/
 llmforge/paper_plot/figs/
 llmforge/paper_plot/predictor_verify/figs/
 llmforge/paper_plot/pareto_trends/figs/
@@ -126,7 +122,7 @@ llmforge/paper_plot/hw_gpt_bench/figs/
 *.zip
 *.bin
 data/
-evo_gpt/data/
+llmforge_train/data/
 
 # =============================================================================
 # LaTeX intermediates (in case anyone builds a paper draft inside the repo)

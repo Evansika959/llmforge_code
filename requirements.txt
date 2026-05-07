@@ -10,7 +10,7 @@ tqdm>=4.66
 # NSGA / search bookkeeping
 matplotlib>=3.7
 
-# Evo_GPT training
+# LLMForge training training
 tiktoken>=0.5
 rich>=13.0
 seaborn>=0.13

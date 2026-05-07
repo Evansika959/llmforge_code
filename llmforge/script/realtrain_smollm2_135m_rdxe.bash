@@ -63,6 +63,31 @@
 #   default; switch to hosts_4instances.yaml if you only have 4 hosts up.
 # - rDXE caches Timeloop mappings per (chip_config × GEMM_shape).  Sharing
 #   hw_eval/runs/rdxe/ across rDXE runs gives big speedups on later runs.
+# ─────────────────────────────────────────────────────────────────────────
+# PREREQUISITES
+# ─────────────────────────────────────────────────────────────────────────
+# This is a *production* search recipe. Running it requires:
+#   1. An 8-host H100 pool (one machine per concurrent active-learning real-
+#      train). Hosts are listed in --realtrain_hosts_file (use a real hosts
+#      yaml; the bundled script/examples/hosts_example.yaml has placeholders).
+#   2. SSH access (--realtrain_user / --realtrain_ssh_key) from this machine
+#      to every host in (1).
+#   3. The conda env named in --realtrain_conda_env (default "llmforge")
+#      pre-installed on every remote host with llmforge_train/requirements_*.txt.
+#   4. The llmforge_train/ package present at --realtrain_remote_llmforge_train_dir
+#      on every remote host (clone of the same repo; the trainer does
+#      `git pull` before each AL event).
+#   5. Timeloop + Accelergy installed locally (only for hw_mode=timeloop):
+#        pip install timeloopfe accelergy
+#      plus the timeloop-{mapper,model} CLI binaries — see README.md.
+#   6. ZEUS energy-measurement library locally (only for hw_mode=zeus):
+#        pip install zeus-ml
+#
+# For a self-contained variant that does not need a cluster or remote
+# training (no AL events, surrogate stays static), see
+#   example_scripts/06_local_substrate_search.bash
+# which runs a comparable search using only the local Timeloop install.
+# ─────────────────────────────────────────────────────────────────────────
 set -e
 cd "$(dirname "$0")/.."
 
@@ -87,7 +112,7 @@ python -u run_cosearch.py \
     --realtrain_user ${USER:-anon} \
     --realtrain_ssh_key ~/.ssh/id_rsa \
     --realtrain_conda_env ${CONDA_ENV:-llmforge} \
-    --realtrain_remote_evo_gpt_dir ${EVO_GPT_DIR:-$HOME/evo_gpt} \
+    --realtrain_remote_llmforge_train_dir ${LLMFORGE_TRAIN_DIR:-$HOME/llmforge_train} \
     --realtrain_max_iters 10000 \
     --realtrain_timeout 10000 \
     --realtrain_poll_interval 300 \
