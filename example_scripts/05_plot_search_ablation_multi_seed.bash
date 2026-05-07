@@ -78,12 +78,11 @@ echo "[info] NSGA  + GQA  : $n_gqas seeds"
 echo "[info] Output       : $OUT_PDF"
 
 python3 "$EXAMPLE_DIR/_lib/plot_hv_compare_multi_seed.py" \
-    --run "NSGA + IHA (ours):#1f77b4:${CSV_NSGA_IHA}" \
+    --run "NSGA + IHA:#1f77b4:${CSV_NSGA_IHA}" \
     --run "Random + IHA:#888888:${CSV_RANDOM_IHA}" \
     --run "NSGA + GQA:#ff7f0e:${CSV_NSGA_GQA}" \
     --out "$OUT_PDF" \
-    --obj-keys val_loss params_M \
-    --title "Search-strategy ablation on the IHA search space (mean +/- 1 sigma)"
+    --obj-keys val_loss params_M
 
 echo ""
 echo "[05_plot_search_ablation_multi_seed] done."
