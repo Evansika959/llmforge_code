@@ -1,0 +1,38 @@
+constraints:
+  # DXE constraints — weights on-chip, forced spatial factors.
+  #
+  # Key: Weights bypass DRAM (stored in WMEM, loaded once at init).
+  # Only activations (Inputs/Outputs) use DRAM.
+  # This models the DXE's actual decode behavior where all layer weights
+  # fit in 3MB WMEM and DRAM is only accessed for activation I/O.
+  #
+  # Spatial utilization:
+  #   DXT meshX=8:      D=8  (8 output-channel groups)
+  #   VAC meshY=16:     D=16 (16 output channels per DXT)
+  #   mac_lane meshX=16: E=16 (16-wide reduction)
+  #   Total: D=128, E=16 → 2048 MACs
+  version: 0.4
+  targets:
+    # DRAM: only activations, weights bypass (on-chip in WMEM)
+    - target: DRAM
+      type: dataspace
+      keep: [Inputs, Outputs, Weights]
+    - target: DRAM
+      type: temporal
+      permutation: [E, D, L]
+    - target: global_sram
+      type: temporal
+      permutation: [L, E, D]
+    - target: head_sram
+      type: temporal
+      permutation: [E, D, L]
+    # Force full spatial utilization
+    - target: DXT
+      type: spatial
+      factors: [N=1, E=1, L=1, R=1, S=1, Q=1, D=8]
+    - target: VAC
+      type: spatial
+      factors: [N=1, E=1, L=1, Q=1, R=1, S=1, D=16]
+    - target: mac_lane
+      type: spatial
+      factors: [N=1, D=1, L=1, R=1, S=1, Q=1, E=16]

@@ -1,0 +1,47 @@
+# Pythia-160M reference architecture, mapped into the IHA (Infinite
+# Heterogeneous Attention) Individual format used by NSGA search.
+#
+# Source of truth: EleutherAI/pythia-160m/config.json
+#   architectures           = ["GPTNeoXForCausalLM"]
+#   hidden_size             = 768
+#   num_hidden_layers       = 12
+#   num_attention_heads     = 12
+#   num_key_value_heads     = 12       (no GQA — full multi-head attention)
+#   intermediate_size       = 3072      (= 4 × hidden_size)
+#   head_dim                = 64        (= 768 / 12)
+#   hidden_act              = gelu      (2-matrix MLP, NOT SwiGLU)
+#   tie_word_embeddings     = false
+#   rotary_pct              = 0.25      (partial rotary; we use abs-pos in build)
+#   max_position_embeddings = 2048
+#
+# Mapping → IHA fields:
+#   hidden_size          → n_embd
+#   num_attention_heads  → n_head
+#   num_key_value_heads  → n_kv_group
+#   head_dim             → n_qk_head_dim = n_v_head_dim
+#   intermediate_size    → mlp_size
+#   GeLU MLP             → mlp_variant: "mlp"   (the 2-matrix OriginalMLP)
+#
+# block_size here is the measurement context length used by ZEUS, not
+# Pythia's max_position_embeddings.
+
+name: Pythia-160M
+
+n_embd: 768
+block_size: 512
+use_concat_heads: true
+
+# Pythia uses GeLU 2-matrix MLP, not SwiGLU. Tagging the YAML so
+# build_model_from_individual instantiates OriginalMLP instead of the
+# global SwiGLU default.
+mlp_variant: mlp
+
+n_layers: 12
+layer_template:
+  n_head: 12
+  n_kv_group: 12       # full MHA — no GQA
+  n_qk_head_dim: 64
+  n_v_head_dim: 64
+  mlp_size: 3072
+  n_cproj: 1
+  attention_variant: infinite

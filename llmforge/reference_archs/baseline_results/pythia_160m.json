@@ -1,0 +1,98 @@
+{
+  "name": "Pythia-160M",
+  "exp_name": "pythia_160m_zeus",
+  "ref_yaml": "${LLMFORGE_DIR:-$HOME/llmforge}/reference_archs/pythia_160m.yaml",
+  "globals": {
+    "n_embd": 768,
+    "block_size": 512,
+    "use_concat_heads": true,
+    "layer_mask": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "mlp_variant": "mlp"
+  },
+  "n_active_layers": 12,
+  "params_M_est": 113.246208,
+  "config": {
+    "prefill_len": 256,
+    "decode_len": 256,
+    "seq_len": 512,
+    "zeus_dtype": "bf16",
+    "no_kv_cache": false
+  },
+  "platforms_run": [
+    "zeus",
+    "timeloop_dxe_relaxed"
+  ],
+  "platform_timings_s": {
+    "zeus": 16.241964101791382,
+    "timeloop_dxe_relaxed": 682.6238732337952
+  },
+  "headline": {
+    "zeus": {
+      "ttft_ms": 13.090848922729492,
+      "tpot_ms": 8.88129137456417,
+      "energy_per_token_uJ": 555554.6875111759,
+      "power_W": 62.572280624155454
+    }
+  },
+  "analytical": {
+    "params_M": 123.532032,
+    "params": 123.532032,
+    "flops_per_token": 170668032.0,
+    "kv_cache_bytes": 9437184,
+    "kv_cache_MB": 9.437184
+  },
+  "hw": {
+    "zeus": {
+      "ttft": 0.013090848922729492,
+      "tpot": 0.00888129137456417,
+      "ttft_ms": 13.090848922729492,
+      "tpot_ms": 8.88129137456417,
+      "energy_per_token_uJ": 555554.6875111759,
+      "session_e_per_tok_uJ": 279346.0710789077,
+      "power_W": 62.572280624155454,
+      "envelope_feasible": true,
+      "zeus_prefill_energy_J": 0.8031883895397186,
+      "zeus_decode_energy_J": 142.22200000286102,
+      "zeus_decode_len": 256,
+      "zeus_prefill_len": 256,
+      "zeus_dtype": "bf16",
+      "zeus_kv_cache_used": true,
+      "zeus_kv_cache_skip": null
+    },
+    "timeloop_dxe_relaxed": {
+      "status": "silent_zero_both",
+      "note": "Both prefill and decode passes returned 0 cycles \u2014 mapper likely found a degenerate (no-DRAM) mapping or silently rejected the shape.",
+      "energy_uJ": 1695.8800320000005,
+      "cycles": 0,
+      "total_ops": 89344134144.0,
+      "total_memory_accesses": 118754304.0,
+      "fusion_saved_energy_uJ": 19495.759968,
+      "fusion_saved_cycles": 76709376.0,
+      "energy_per_token_uJ": 3.312265687500001,
+      "cycles_per_token": 0.0,
+      "token_delay": 0.0,
+      "edp": 0.0,
+      "prefill_energy_uJ": 863.1959999999999,
+      "prefill_cycles": 0,
+      "ttft": 0.0,
+      "decode_energy_uJ": 3.2526720000000022,
+      "decode_cycles": 0,
+      "tpot": 0.0
+    }
+  },
+  "errors": {},
+  "timeloop_dxe_relaxed_added_at": "2026-04-30T22:43:38.649992+00:00"
+}

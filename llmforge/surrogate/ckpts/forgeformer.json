@@ -1,0 +1,26 @@
+{
+  "model": {
+    "d_model": 64,
+    "nhead": 4,
+    "num_layers": 4,
+    "max_layers": 40,
+    "dropout": 0.2
+  },
+  "training": {
+    "csv_paths": [
+      "${LLMFORGE_DIR:-$HOME/llmforge}/surrogate/dataset/dataset_200M.csv"
+    ],
+    "epochs_trained": 194,
+    "epochs_max": 200,
+    "batch_size": 32,
+    "lr": 0.0001,
+    "weight_decay": 0.0,
+    "test_ratio": 0.2,
+    "seed": 100,
+    "n_train": 1642,
+    "n_test": 411
+  },
+  "results": {
+    "best_test_l1": 0.20552381873130798
+  }
+}

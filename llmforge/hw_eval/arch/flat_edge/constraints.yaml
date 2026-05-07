@@ -1,0 +1,26 @@
+constraints:
+  # =========================================================================
+  # FLAT-Edge Constraints
+  #
+  # Key design: flexible dataflow — the mapper explores W/I/O-stationary
+  # and finds the best mapping. Minimal hardcoded constraints to allow
+  # maximum exploration.
+  #
+  # The global buffer keeps all three dataspaces, enabling the fusion
+  # model in hw_exp.py to subtract inter-op DRAM traffic.
+  # =========================================================================
+  version: 0.4
+  targets:
+    # =======================================
+    # DRAM — Outermost tiling
+    # =======================================
+    - target: DRAM
+      type: temporal
+      permutation: [E, D, L]
+
+    # =======================================
+    # Global Buffer — flexible tiling
+    # =======================================
+    - target: global_buffer
+      type: temporal
+      permutation: [L, E, D]

@@ -1,0 +1,118 @@
+architecture:
+  # Simba-Edge — Scaled-down Output-Stationary Chiplet for Edge
+  # Based on NVIDIA Simba (Shao et al., MICRO 2019)
+  # Buffers reduced to edge-appropriate sizes for fair comparison
+  # with Gemmini (0.57mm²) and Eyeriss (1.69mm²)
+  #
+  # Changes from full Simba:
+  #   PEInputBuffer:  8192 → 1024 depth (1KB vs 8KB per PE)
+  #   PEWeightBuffer: 4096 → 512 depth  (512B vs 4KB per distributed buffer)
+  #   GlobalBuffer:   2048 → 512 depth  (16KB vs 64KB)
+  #   PEAccuBuffer:   128 → 64 depth
+  #
+  # Compute: 16 PE × 4 distributed × 4 reg_mac = 256 MACs (unchanged)
+  version: 0.4
+  nodes:
+  - !Container
+    name: System
+    attributes:
+      datawidth: 8
+      technology: "16nm"
+
+  - !Component
+    name: DRAM
+    class: DRAM
+    attributes:
+      type: "LPDDR4"
+      width: 64
+      datawidth: 8
+      read_bandwidth: 4
+      write_bandwidth: 4
+
+  - !Component
+    name: GlobalBuffer
+    class: smartbuffer_SRAM
+    attributes:
+      depth: 512
+      width: 256
+      datawidth: 8
+      n_banks: 4
+      nports: 2
+    constraints:
+      dataspace: {keep: [Inputs, Outputs], bypass: [Weights]}
+
+  - !Container
+    name: PE
+    spatial: {meshX: 16}
+    constraints:
+      spatial: {factors: [R=1, S=1, L=1, Q=1, N=1], permutation: [D, E, R, S, L, Q, N]}
+
+  - !Component
+    name: PEInputBuffer
+    class: storage
+    subclass: smartbuffer_RF
+    attributes:
+      depth: 512
+      width: 64
+      datawidth: 8
+    constraints:
+      dataspace: {keep: [Inputs], bypass: [Weights, Outputs]}
+
+  - !Container
+    name: distributed_buffers
+    spatial: {meshY: 4}
+    constraints:
+      spatial: {factors: [L=1, Q=1, R=1, S=1, E=1, N=1], permutation: [D, E, Q, R, S, L, N]}
+
+  - !Parallel
+    nodes:
+    - !Component
+      name: PEWeightBuffer
+      class: storage
+      subclass: smartbuffer_RF
+      attributes:
+        depth: 256
+        width: 64
+        datawidth: 8
+        n_banks: 4
+      constraints:
+        dataspace: {keep: [Weights], bypass: [Inputs, Outputs]}
+
+    - !Component
+      name: PEAccuBuffer
+      class: storage
+      subclass: smartbuffer_RF
+      attributes:
+        depth: 64
+        datawidth: 24
+        width: 24
+      constraints:
+        dataspace: {keep: [Outputs], bypass: [Inputs, Weights]}
+
+    - !Nothing {constraints: {dataspace: {keep: [Inputs]}}}
+
+  - !Container
+    name: reg_mac
+    spatial: {meshY: 4}
+    constraints:
+      spatial: {factors: [L=1, Q=1, R=1, S=1, D=1, N=1], permutation: [E, D, Q, R, S, L, N]}
+
+  - !Component
+    name: PEWeightRegs
+    class: storage
+    subclass: smartbuffer_RF
+    attributes:
+      depth: 1
+      width: 512
+      cluster_size: 64
+      num_ports: 2
+      datawidth: 8
+    constraints:
+      dataspace: {keep: [Weights], bypass: [Inputs, Outputs]}
+
+  - !Component
+    name: mac
+    class: intmac
+    attributes:
+      multiplier_width: 8
+      adder_width: 16

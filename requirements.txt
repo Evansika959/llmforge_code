@@ -1,0 +1,26 @@
+# Core
+torch>=2.4
+numpy>=1.26
+pandas>=2.0
+scipy>=1.11
+scikit-learn>=1.3
+pyyaml>=6.0
+tqdm>=4.66
+
+# NSGA / search bookkeeping
+matplotlib>=3.7
+
+# Evo_GPT training
+tiktoken>=0.5
+rich>=13.0
+seaborn>=0.13
+tensorboard>=2.15
+
+# Remote training (optional)
+fabric>=3.0
+paramiko>=3.0
+
+# ZEUS GPU energy measurement (optional, only required when hw_mode=zeus)
+# zeus-ml>=0.15
+
+# Timeloop is installed separately. See https://timeloop.csail.mit.edu/.

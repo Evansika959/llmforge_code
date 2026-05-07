@@ -1,0 +1,44 @@
+# SmolLM2-135M reference architecture, mapped into the IHA (Infinite
+# Heterogeneous Attention) Individual format used by NSGA search.
+#
+# Source of truth: HuggingFaceTB/SmolLM2-135M/config.json
+#   hidden_size           = 576
+#   num_hidden_layers     = 30
+#   num_attention_heads   = 9
+#   num_key_value_heads   = 3          (GQA 3:1)
+#   intermediate_size     = 1536
+#   head_dim              = 64         (= 576 / 9)
+#   hidden_act            = silu       (SwiGLU-style gated MLP)
+#   tie_word_embeddings   = true
+#   max_position_embeddings = 8192     (inference ctx; training ctx is set below)
+#
+# Mapping → IHA fields:
+#   hidden_size          → n_embd
+#   num_attention_heads  → n_head
+#   num_key_value_heads  → n_kv_group
+#   head_dim             → n_qk_head_dim = n_v_head_dim
+#   intermediate_size    → mlp_size
+#   (Llama MHA)          → attention_variant: "infinite"
+#
+# block_size here is the training context length used by the remote
+# trainer; it is independent of HF's max_position_embeddings.
+
+name: SmolLM2-135M
+
+n_embd: 576
+block_size: 512
+use_concat_heads: true
+
+# All 30 layers are homogeneous per the HF config. The loader expands
+# `layer_template` n_layers times.
+n_layers: 30
+layer_template:
+  n_head: 9
+  n_kv_group: 3
+  n_qk_head_dim: 64
+  n_v_head_dim: 64
+  mlp_size: 1536
+  n_cproj: 1
+  attention_variant: infinite
+
+# val_loss=2.7794

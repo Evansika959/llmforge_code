@@ -1,0 +1,20 @@
+constraints:
+  # Eyeriss Row-Stationary constraints for GEMM workloads
+  #
+  # NOTE: Per-PE scratchpad constraints (ifmap_spad, weights_spad, psum_spad)
+  # are defined inline in the architecture YAML. Only DRAM and shared_glb
+  # temporal constraints are specified here to avoid conflicts.
+  version: 0.4
+  targets:
+    # =======================================
+    # DRAM
+    # =======================================
+    - target: DRAM
+      type: temporal
+      permutation: [E, D, L]
+    # =======================================
+    # shared_glb Constraints
+    # =======================================
+    - target: shared_glb
+      type: temporal
+      permutation: [L, E, D]

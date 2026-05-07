@@ -1,0 +1,39 @@
+# Qwen-2.5 7B (scaled down) — reference architecture, mapped into the IHA
+# layout used by NSGA search.
+#
+# Source of truth (original): Qwen/Qwen2.5-7B/config.json
+#   hidden_size             = 3584
+#   num_hidden_layers       = 28
+#   num_attention_heads     = 28
+#   num_key_value_heads     = 4         (GQA 7:1)
+#   intermediate_size       = 18944
+#   head_dim                = 128
+#   hidden_act              = silu      (SwiGLU MLP)
+#
+# Scaled-down mapping principles:
+#   1. Keep n_embd = 768 to match the cosearch search space.
+#   2. Keep GQA ratio close (12:2 = 6:1, original 7:1 is rounded).
+#   3. Keep MLP ratio close (3840 / 768 = 5.0, original 18944 / 3584 ≈ 5.29).
+#
+# Resulting scaled config (from the user's mapping table):
+#   n_embd=768, n_layer=22, n_head=12, n_kv_group=2, head_dim=64,
+#   mlp_size=3840, block_size=1024 → ~198.6 M params, val_loss=2.7071
+#
+# All Qwen-2.5 family models use SwiGLU MLPs; we inherit the build's
+# `mlp_variant="swiglu"` default (no override field needed).
+
+name: Qwen-2.5-7B-scaled
+
+n_embd: 768
+block_size: 1024
+use_concat_heads: true
+
+n_layers: 22
+layer_template:
+  n_head: 12
+  n_kv_group: 2          # 12:2 = 6:1 (close to original 7:1)
+  n_qk_head_dim: 64
+  n_v_head_dim: 64
+  mlp_size: 3840         # 5.0× n_embd, mirrors original ~5.3× ratio
+  n_cproj: 1
+  attention_variant: infinite

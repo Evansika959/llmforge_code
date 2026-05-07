@@ -1,0 +1,148 @@
+architecture:
+  # =========================================================================
+  # FLAT-Edge — Fused Attention Dataflow Accelerator (Edge Configuration)
+  # Based on: Kao, Subramanian, Agrawal, Yazdanbakhsh, Krishna, ASPLOS 2023
+  # "FLAT: An Optimized Dataflow for Mitigating Attention Bottlenecks"
+  #
+  # FLAT is a dataflow optimization, not a specific chip. This Timeloop
+  # model captures FLAT's edge hardware template:
+  #   - 32×32 = 1024 MACs (PE array)
+  #   - 200KB global buffer (mid-range from paper's 20KB-2GB sweep)
+  #   - 1 TB/s on-chip bandwidth
+  #   - 50 GB/s off-chip DRAM bandwidth
+  #
+  # Key difference from Gemmini/Eyeriss:
+  #   - Global buffer keeps ALL three dataspaces (Inputs, Weights, Outputs)
+  #     This enables fused attention: QK output stays on-chip as PV input
+  #   - Larger PE array (1024 vs 256 MACs) for attention parallelism
+  #   - Two-level spatial hierarchy (rows × cols) for flexible mapping
+  #   - Generous on-chip BW (1 TB/s) to feed the larger array
+  #
+  # What Timeloop CAN model: per-GEMM energy/cycles with FLAT's buffer config
+  # What Timeloop CANNOT model: inter-op fusion (handled by hw_exp.py fusion model)
+  # =========================================================================
+  version: 0.4
+  nodes:
+
+  # =============================================
+  # Top-Level System
+  # =============================================
+  - !Container
+    name: system
+    attributes:
+      technology: "16nm"
+
+  # =============================================
+  # DRAM — Off-Chip Memory
+  # =============================================
+  # 50 GB/s off-chip BW (from Table 2)
+  # At 1GHz, 50 GB/s = 50 bytes/cycle
+  - !Component
+    name: DRAM
+    class: DRAM
+    attributes:
+      type: "LPDDR4"
+      width: 64
+      datawidth: 8
+      read_bandwidth: 25
+      write_bandwidth: 25
+
+  # =============================================
+  # FLAT Accelerator Container
+  # =============================================
+  - !Container
+    name: FLAT
+    attributes:
+      technology: "16nm"
+
+  # =============================================
+  # Global Buffer — 200KB Shared Scratchpad
+  # =============================================
+  # FLAT's key feature: stores ALL dataspaces (Inputs, Weights, Outputs)
+  # This enables fused attention: QK outputs stay on-chip as PV inputs.
+  # Partitioned as software-managed scratchpad (not cache).
+  #
+  # 200KB = 25600 entries × 64-bit width (8 bytes)
+  # 1 TB/s on-chip BW at 1GHz = 1000 bytes/cycle
+  # Split across read/write: 500 B/cycle each
+  - !Component
+    name: global_buffer
+    class: smartbuffer_SRAM
+    attributes:
+      depth: 25600
+      width: 64
+      n_banks: 32
+      datawidth: 8
+      read_bandwidth: 500
+      write_bandwidth: 500
+    constraints:
+      dataspace: {keep: [Inputs, Weights, Outputs], bypass: []}
+
+  # =============================================
+  # PE Rows — Spatial (output dimension D)
+  # =============================================
+  # 32 rows parallelize over output channels
+  - !Container
+    name: PE_row
+    spatial: {meshY: 32}
+    constraints:
+      spatial:
+        factors: [N=1, E=1, L=1, R=1, S=1, Q=1]
+
+  # =============================================
+  # PE Accumulator — Per-Row Partial Sum Buffer
+  # =============================================
+  - !Component
+    name: pe_accum
+    class: smartbuffer_RF
+    attributes:
+      depth: 32
+      width: 32
+      datawidth: 16
+      read_bandwidth: 4
+      write_bandwidth: 4
+    constraints:
+      dataspace: {keep: [Outputs], bypass: [Inputs, Weights]}
+      temporal:
+        permutation: [N, E, L, Q, R, S, D]
+        factors: [N=1, E=1, R=1, S=1, L=1, Q=1]
+
+  # =============================================
+  # PE Cols — Spatial (reduction dimension E)
+  # =============================================
+  # 32 cols parallelize over reduction/input channels
+  - !Container
+    name: PE_col
+    spatial: {meshX: 32}
+    constraints:
+      spatial:
+        factors: [N=1, D=1, L=1, R=1, S=1, Q=1]
+
+  # =============================================
+  # Per-PE Weight Register
+  # =============================================
+  - !Component
+    name: pe_reg
+    class: smartbuffer_RF
+    attributes:
+      depth: 1
+      width: 16
+      datawidth: 8
+      read_bandwidth: 2
+      write_bandwidth: 2
+    constraints:
+      dataspace: {keep: [Weights], bypass: [Inputs, Outputs]}
+      temporal:
+        factors: [D=1, E=1, L=1]
+
+  # =============================================
+  # MAC Unit
+  # =============================================
+  # INT8 multiply, INT16 accumulate
+  # 32 × 32 = 1024 total MACs
+  - !Component
+    name: mac
+    class: intmac
+    attributes:
+      multiplier_width: 8
+      adder_width: 16

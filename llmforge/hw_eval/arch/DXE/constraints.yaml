@@ -1,0 +1,60 @@
+constraints:
+  # =========================================================================
+  # rDXE Constraints for GEMM Workloads
+  #
+  # Dimension mapping (Timeloop GEMM convention):
+  #   E = output channels (d_out)
+  #   D = reduction / input channels (d_in)
+  #   L = batch / sequence tokens
+  #   N, R, S, Q = unused for GEMM (all = 1)
+  #
+  # RTL-confirmed dataflow (sys_defs.svh, array_top.sv, head_top.sv):
+  #   - Weights stationary in per-core WMEM (zero DRAM during decode)
+  #   - Inputs broadcast: global_sram → all DXTs (broadcast mode)
+  #   - Within DXT: head_sram provides row-reuse of recent outputs
+  #   - Within core: WMEM feeds MAC, results accumulate in acc_buffer
+  #   - mac_lane: 16 MACs partition reduction dimension D
+  #   - GBUS (32b, FIFO=28): inter-core partial-sum accumulation
+  #
+  # Per-core scratchpad constraints (wmem, kv_cache, acc_buffer) are
+  # defined inline in arch.yaml. Only DRAM, global_sram, and head_sram
+  # temporal constraints are specified here.
+  #
+  # RTL control states (core_ctrl.sv):
+  #   IDLE → Q_GEN → K_GEN → V_GEN → ATT_QK → ATT_PV →
+  #   PROJ → FFN0 → FFN1
+  # Each state maps to a separate GEMM workload.
+  # =========================================================================
+  version: 0.4
+  targets:
+    # =======================================
+    # DRAM — Outermost Tiling
+    # =======================================
+    # Weights preloaded at init. During inference, DRAM
+    # temporal loops tile problem dimensions that exceed
+    # on-chip capacity. For target models (d_model ≤ 512),
+    # all weights fit on-chip per layer.
+    - target: DRAM
+      type: temporal
+      permutation: [E, D, L]
+
+    # =======================================
+    # Global SRAM — DXE Level
+    # =======================================
+    # 512 B: holds one embedding vector (d_model=512).
+    # Tiles sequence dimension L (one token at a time
+    # in decode; multiple in prefill).
+    # Broadcasts input to all 8 DXTs.
+    - target: global_sram
+      type: temporal
+      permutation: [L, E, D]
+
+    # =======================================
+    # Head SRAM — Per-DXT Level
+    # =======================================
+    # 512 B per DXT: row-reuse buffer.
+    # Tiles the output dimension E that this DXT owns.
+    # RTL: dual-mode (broadcast for attn, unicast for proj).
+    - target: head_sram
+      type: temporal
+      permutation: [E, D, L]

@@ -1,0 +1,122 @@
+architecture:
+  # Eyeriss v1 — Row-Stationary Dataflow
+  # Based on MIT Eyeriss (Chen et al., ISCA 2016 / JSSC 2017)
+  # Config adapted from timeloop-accelergy-exercises "eyeriss_like"
+  #
+  # PE array: 12 rows × 14 columns = 168 PEs (original paper spec)
+  # Global buffer: 128KB (exercises value; paper says 108KB)
+  # Per-PE: ifmap_spad=12, weights_spad=192, psum_spad=16 entries
+  #
+  # Key difference from Gemmini:
+  #   - Row-stationary dataflow: maximizes reuse of all three data types
+  #   - Per-PE scratchpads for weights, inputs, and partial sums
+  #   - Global buffer stores inputs and outputs (weights bypass to PEs directly)
+  #   - 168 PEs (vs Gemmini's 256)
+  version: 0.4
+  nodes:
+  - !Container
+    name: system
+    attributes:
+      technology: "16nm"
+
+  - !Component
+    name: DRAM
+    class: DRAM
+    attributes:
+      type: "LPDDR4"
+      width: 64
+      datawidth: 8
+      read_bandwidth: 4
+      write_bandwidth: 4
+
+  - !Container
+    name: eyeriss
+    attributes:
+      technology: "16nm"
+
+  - !Component
+    name: shared_glb
+    class: smartbuffer_SRAM
+    attributes:
+      # 128KB global buffer (inputs + outputs)
+      depth: 16384
+      width: 64
+      n_banks: 32
+      datawidth: 8
+      read_bandwidth: 16
+      write_bandwidth: 16
+    constraints:
+      dataspace: {keep: [Inputs, Outputs], bypass: [Weights]}
+
+  - !Container
+    name: PE_column
+    spatial: {meshX: 14}
+    constraints:
+      spatial:
+        permutation: [N, E, L, R, S, Q, D]
+        factors: [N=1, E=1, L=1, R=1, S=1, Q=1]
+        split: 999
+
+  - !Container
+    name: PE
+    spatial: {meshY: 12}
+    constraints:
+      spatial:
+        split: 0
+        permutation: [N, L, Q, R, S, E, D]
+        factors: [N=1, L=1, Q=1, R=1, S=1]
+
+  - !Parallel
+    nodes:
+    - !Component
+      name: ifmap_spad
+      class: smartbuffer_RF
+      attributes:
+        depth: 12
+        width: 16
+        datawidth: 8
+        read_bandwidth: 2
+        write_bandwidth: 2
+      constraints:
+        dataspace: {keep: [Inputs]}
+        temporal:
+          permutation: [N, D, E, L, Q, R, S]
+          factors: [N=1, D=1, E=1, L=1, Q=1, R=1, S=1]
+
+    - !Component
+      name: weights_spad
+      class: smartbuffer_RF
+      attributes:
+        depth: 192
+        width: 16
+        datawidth: 8
+        read_bandwidth: 2
+        write_bandwidth: 2
+      constraints:
+        dataspace: {keep: [Weights]}
+        temporal:
+          permutation: [N, D, L, Q, S, E, R]
+          factors: [N=1, D=1, L=1, Q=1, S=1]
+
+    - !Component
+      name: psum_spad
+      class: smartbuffer_RF
+      attributes:
+        depth: 16
+        width: 16
+        update_fifo_depth: 2
+        datawidth: 16
+        read_bandwidth: 2
+        write_bandwidth: 2
+      constraints:
+        dataspace: {keep: [Outputs]}
+        temporal:
+          permutation: [N, E, L, Q, R, S, D]
+          factors: [N=1, E=1, R=1, S=1, L=1, Q=1]
+
+  - !Component
+    name: mac
+    class: intmac
+    attributes:
+      multiplier_width: 8
+      adder_width: 16

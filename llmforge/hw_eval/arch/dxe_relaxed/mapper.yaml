@@ -1,0 +1,10 @@
+mapper:
+  version: 0.4
+  live_status: False
+  diagnostics: False
+  emit_whoop_nest: True
+  optimization_metrics: [edp, delay, energy]
+  num_threads: 36
+  timeout: 1200
+  victory_condition: 500
+  sync_interval: 0

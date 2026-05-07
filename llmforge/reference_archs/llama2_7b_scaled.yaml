@@ -1,0 +1,42 @@
+# LLaMA-2 7B (scaled down) — reference architecture, mapped into the IHA
+# layout used by NSGA search.
+#
+# Source of truth (original): meta-llama/Llama-2-7b-hf/config.json
+#   hidden_size             = 4096
+#   num_hidden_layers       = 32
+#   num_attention_heads     = 32
+#   num_key_value_heads     = 32        (no GQA — full MHA)
+#   intermediate_size       = 11008
+#   head_dim                = 128
+#   hidden_act              = silu      (SwiGLU MLP)
+#
+# Scaled-down mapping principles:
+#   1. Keep n_embd = 768 to match the cosearch search space.
+#   2. Keep depth (n_layer = 32) — Llama-2 7B is the deepest of the three.
+#   3. n_kv_group=4 (12:4 = 3:1) introduces GQA the original lacks; this
+#      diverges from "keep GQA ratio" but matches the search-space
+#      conventions used by the other scaled-down baselines.
+#   4. mlp_size = 2048 → 2.67× n_embd (original 11008 / 4096 ≈ 2.69×).
+#
+# Resulting scaled config (from the user's mapping table):
+#   n_embd=768, n_layer=32, n_head=12, n_kv_group=4, head_dim=64,
+#   mlp_size=2048, block_size=1024 → ~189.6 M params, val_loss=2.7296
+#
+# LLaMA-2 uses SwiGLU MLPs; we inherit the build's `mlp_variant="swiglu"`
+# default (no override field needed).
+
+name: LLaMA-2-7B-scaled
+
+n_embd: 768
+block_size: 1024
+use_concat_heads: true
+
+n_layers: 32
+layer_template:
+  n_head: 12
+  n_kv_group: 4          # 12:4 = 3:1 (original is 1:1, scaled-down adds GQA)
+  n_qk_head_dim: 64
+  n_v_head_dim: 64
+  mlp_size: 2048         # 2.67× n_embd, mirrors original ~2.69× ratio
+  n_cproj: 1
+  attention_variant: infinite

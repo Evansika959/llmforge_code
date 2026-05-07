@@ -1,0 +1,133 @@
+{
+  "name": "Qwen-2.5-0.5B",
+  "exp_name": "qwen2_5_0_5b_rdxe",
+  "ref_yaml": "${LLMFORGE_DIR:-$HOME/llmforge}/reference_archs/qwen2_5_0_5b.yaml",
+  "globals": {
+    "n_embd": 896,
+    "block_size": 512,
+    "use_concat_heads": true,
+    "layer_mask": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "n_active_layers": 24,
+  "params_M_est": 357.82656,
+  "config": {
+    "prefill_len": 256,
+    "decode_len": 256,
+    "seq_len": 512,
+    "zeus_dtype": "bf16",
+    "no_kv_cache": false
+  },
+  "platforms_run": [
+    "rdxe"
+  ],
+  "platform_timings_s": {
+    "rdxe": 1.0917701721191406
+  },
+  "headline": {
+    "rdxe": {
+      "ttft_ms": 7.07111,
+      "tpot_ms": 4.07625,
+      "energy_per_token_uJ": 135.6490924736,
+      "power_W": 0.033277912903673726
+    }
+  },
+  "analytical": {
+    "params_M": 402.856832,
+    "params": 402.856832,
+    "flops_per_token": 726835200.0,
+    "kv_cache_bytes": 3145728,
+    "kv_cache_MB": 3.145728
+  },
+  "hw": {
+    "rdxe": {
+      "ttft": 0.00707111,
+      "tpot": 0.00407625,
+      "ttft_ms": 7.07111,
+      "tpot_ms": 4.07625,
+      "energy_per_token_uJ": 135.6490924736,
+      "session_e_per_tok_uJ": 154.38804785920001,
+      "total_area_mm2": 1108.38,
+      "power_W": 0.033277912903673726,
+      "mac_util_pct": 49.326840446863365,
+      "n_chips": 6,
+      "chip_macs": 8192,
+      "selected_mac_per_vac": 16,
+      "selected_max_chips": 8,
+      "selected_wmem_KB": 96,
+      "envelope_feasible": false,
+      "tokens_per_second": 1471.9411223551058,
+      "inter_chip_comm_energy_uJ": 0.03584,
+      "pipeline_depth": 6,
+      "chip_pareto": [
+        {
+          "sweep_mac_per_vac": 64,
+          "sweep_max_chips": 8,
+          "sweep_wmem_per_core_KB": 24,
+          "ttft_ms": 4.14289,
+          "tpot_ms": 3.95721,
+          "per_tok_uJ": 135.61045458560002,
+          "session_e_per_tok_uJ": 154.34940997120003,
+          "total_area_mm2": 1364.16,
+          "power_W": 0.034269208504375565,
+          "mac_util_pct": 4.30672268907563,
+          "n_chips": 6,
+          "chip_macs": 131072
+        },
+        {
+          "sweep_mac_per_vac": 64,
+          "sweep_max_chips": 8,
+          "sweep_wmem_per_core_KB": 48,
+          "ttft_ms": 4.350805,
+          "tpot_ms": 3.97785,
+          "per_tok_uJ": 135.60079511360001,
+          "session_e_per_tok_uJ": 154.33975049920002,
+          "total_area_mm2": 1193.6399999999999,
+          "power_W": 0.03408896643000616,
+          "mac_util_pct": 8.058779483339574,
+          "n_chips": 6,
+          "chip_macs": 65536
+        },
+        {
+          "sweep_mac_per_vac": 64,
+          "sweep_max_chips": 8,
+          "sweep_wmem_per_core_KB": 192,
+          "ttft_ms": 5.762815,
+          "tpot_ms": 4.26621,
+          "per_tok_uJ": 135.5911356416,
+          "session_e_per_tok_uJ": 154.3300910272,
+          "total_area_mm2": 1108.38,
+          "power_W": 0.03178257414463892,
+          "mac_util_pct": 16.968860859282618,
+          "n_chips": 6,
+          "chip_macs": 16384
+        }
+      ]
+    }
+  },
+  "errors": {}
+}

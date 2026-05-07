@@ -1,0 +1,15 @@
+# Tiny in-space reference arch for --seed_arch tests.
+# Lives inside search_space_200M.yaml (n_embd=768, mlp_size step=256, etc.).
+name: tiny200m
+n_embd: 768
+block_size: 1024
+use_concat_heads: true
+n_layers: 8
+layer_template:
+  n_head: 12
+  n_kv_group: 4
+  n_qk_head_dim: 64
+  n_v_head_dim: 64
+  mlp_size: 2048
+  n_cproj: 1
+  attention_variant: infinite

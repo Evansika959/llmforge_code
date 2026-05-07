@@ -1,0 +1,48 @@
+# GPT-2 Small reference architecture, mapped into the IHA (Infinite
+# Heterogeneous Attention) Individual format used by NSGA search.
+#
+# Source of truth: openai-community/gpt2/config.json
+#   hidden_size (n_embd)    = 768
+#   num_hidden_layers       = 12
+#   num_attention_heads     = 12
+#   num_key_value_heads     = 12        (no GQA, full multi-head attention)
+#   intermediate_size       = 3072       (= 4 * hidden_size, n_inner)
+#   head_dim                = 64         (= 768 / 12)
+#   activation_function     = gelu_new   (2-matrix MLP, NOT SwiGLU)
+#   tie_word_embeddings     = true       (wte/lm_head tied)
+#   n_positions             = 1024
+#   positional embeddings   = learned absolute (no rotary)
+#
+# Mapping -> IHA fields:
+#   hidden_size          -> n_embd
+#   num_attention_heads  -> n_head
+#   num_key_value_heads  -> n_kv_group
+#   head_dim             -> n_qk_head_dim = n_v_head_dim
+#   intermediate_size    -> mlp_size
+#   GeLU 2-matrix MLP    -> mlp_variant: "mlp"   (OriginalMLP)
+#
+# block_size here is the measurement context length used by HW evaluators,
+# not GPT-2's n_positions.
+
+name: GPT-2-Small
+
+n_embd: 768
+block_size: 512
+use_concat_heads: true
+
+# GPT-2 uses GeLU 2-matrix MLP, not SwiGLU. Tag so that
+# build_model_from_individual instantiates OriginalMLP rather than the
+# global SwiGLU default.
+mlp_variant: mlp
+
+n_layers: 12
+layer_template:
+  n_head: 12
+  n_kv_group: 12       # full MHA, no GQA
+  n_qk_head_dim: 64
+  n_v_head_dim: 64
+  mlp_size: 3072
+  n_cproj: 1
+  attention_variant: infinite
+
+# val_loss = 3.076 (FineWeb-Edu-10BT, Table 3)

@@ -1,0 +1,233 @@
+architecture:
+  # Single-chip decoder-execution (DXE) substrate, weight-stationary.
+  # Compute: 8 tiles x 16 cores x 16 INT8 MACs = 2048 MACs.
+  # On-chip SRAM ~4 MB (per-core weight memory + per-core KV-cache +
+  # tile-local input buffers + chip-level global buffer).
+  # Off-chip DRAM is inactive during decode; weights pre-loaded at boot.
+  version: 0.4
+  nodes:
+
+  # =============================================
+  # Top-Level System
+  # =============================================
+  - !Container
+    name: system
+    attributes:
+      technology: "16nm"
+
+  # =============================================
+  # DRAM — Off-Chip (I/O constrained)
+  # =============================================
+  # Weights loaded once at init via 16-ch quad-SPI (800 Mb/s).
+  # Zero DRAM access during decode inference.
+  - !Component
+    name: DRAM
+    class: DRAM
+    attributes:
+      type: "LPDDR4"
+      width: 64
+      datawidth: 8
+      read_bandwidth: 2
+      write_bandwidth: 2
+
+  # =============================================
+  # DXE Container
+  # =============================================
+  - !Container
+    name: DXE
+    attributes:
+      technology: "16nm"
+
+  # =============================================
+  # Global SRAM — DXE-Level Input Buffer
+  # =============================================
+  # RTL: global_sram_wrapper.sv
+  # GLOBAL_SRAM_DEPTH = 64/2 = 32
+  # Width: 128b (MAC_MULT_NUM × IDATA_WIDTH = 16 × 8)
+  # Physical: 1 × dual-port SRAM macro (global_sram)
+  # Size: 32 × 16 B = 512 B
+  # Holds one d_model=512 embedding vector.
+  # Broadcast to all 8 DXTs.
+  - !Component
+    name: global_sram
+    class: smartbuffer_SRAM
+    attributes:
+      depth: 32
+      width: 128
+      n_banks: 1
+      datawidth: 8
+      read_bandwidth: 16
+      write_bandwidth: 16
+    constraints:
+      dataspace: {keep: [Inputs, Outputs], bypass: [Weights]}
+
+  # =============================================
+  # DXT Array — 8 Heads
+  # =============================================
+  # RTL: HEAD_NUM = 8
+  # Each DXT handles one attention head's compute.
+  # Spatial: partition output dimension (E) across DXTs.
+  - !Container
+    name: DXT
+    spatial: {meshX: 8}
+    constraints:
+      spatial:
+        permutation: [N, E, L, R, S, Q, D]
+        factors: [N=1, D=1, L=1, R=1, S=1, Q=1]
+        split: 999
+
+  # =============================================
+  # Head SRAM — Per-DXT Row-Reuse Buffer
+  # =============================================
+  # RTL: head_sram.sv
+  # HEAD_SRAM_DEPTH = 64/2 = 32
+  # Width: 128b | Physical: 1 × dual-port SRAM (global_sram macro)
+  # Size: 32 × 16 B = 512 B per DXT
+  # Supports broadcast (attention) and unicast (projection) modes.
+  - !Component
+    name: head_sram
+    class: smartbuffer_SRAM
+    attributes:
+      depth: 32
+      width: 128
+      n_banks: 1
+      datawidth: 8
+      read_bandwidth: 8
+      write_bandwidth: 8
+    constraints:
+      dataspace: {keep: [Inputs, Outputs], bypass: [Weights]}
+
+  # =============================================
+  # VAC Array — 16 Cores per DXT
+  # =============================================
+  # RTL: HEAD_CORE_NUM = 16
+  # Connected via:
+  #   HLINK — systolic input datapath between cores
+  #   GBUS — 32-bit bus, FIFO depth 28, round-robin arbiter
+  - !Container
+    name: VAC
+    spatial: {meshY: 16}
+    constraints:
+      spatial:
+        split: 0
+        permutation: [N, L, Q, R, S, E, D]
+        factors: [N=1, L=1, Q=1, R=1, S=1, D=1]
+
+  # =============================================
+  # Per-Core Storage (Parallel Buffers)
+  # =============================================
+  - !Parallel
+    nodes:
+    # -------------------------------------------
+    # WMEM — Weight Memory (24 KB per core)
+    # -------------------------------------------
+    # RTL: true_wmem_wrapper.sv
+    # WMEM_DEPTH = 3072/2 = 1536
+    # Split into two physical banks:
+    #   wmem_512_attn: 2 × (64b × 512) = 8 KB
+    #     addr 0–511: QKV projection + output projection
+    #   wmem_1024_ffn: 2 × (64b × 1024) = 16 KB
+    #     addr 512–1535: FFN0 + FFN1
+    # Independent deep-sleep power gating per bank.
+    # Total: 1536 × 128b = 24 KB/core, 3.00 MB/DXE
+    # 4 physical SRAM macros, all single-port with BWE.
+    - !Component
+      name: wmem
+      class: smartbuffer_SRAM
+      attributes:
+        depth: 1536
+        width: 128
+        n_banks: 2
+        datawidth: 8
+        read_bandwidth: 2
+        write_bandwidth: 2
+      constraints:
+        dataspace: {keep: [Weights]}
+        temporal:
+          permutation: [N, D, L, Q, S, E, R]
+          factors: [N=1, D=1, L=1, Q=1, S=1]
+
+    # -------------------------------------------
+    # KV Cache (8 KB per core)
+    # -------------------------------------------
+    # RTL: core_mem.sv → kv_cache_pkt instantiation
+    # KV_CACHE_DEPTH_SINGLE_USER = 256/2 = 128
+    # Physical depth: 128 × 4 users = 512
+    # Width: 128b (2 × kv_cache_bwe_nopme @ 64b)
+    # Size: 512 × 16 B = 8 KB/core, 1.00 MB/DXE
+    #
+    # Internal: 16 banks (CACHE_NUM = MAC_MULT_NUM)
+    # K stored row-by-row, V stored column-by-column
+    # GQA via : even/odd head pairs share KV
+    #
+    # BYPASSED for GEMM. Active for attention (Q×K, P×V).
+    - !Component
+      name: kv_cache
+      class: smartbuffer_SRAM
+      attributes:
+        depth: 512
+        width: 128
+        n_banks: 2
+        datawidth: 8
+        read_bandwidth: 2
+        write_bandwidth: 2
+      constraints:
+        dataspace: {bypass: [Inputs, Weights, Outputs]}
+
+    # -------------------------------------------
+    # Accumulator (register-based)
+    # -------------------------------------------
+    # RTL: core_acc.v
+    # ODATA_WIDTH = 8*2 + clog2(16) + 5 = 25 bits
+    # Small register accumulator for partial sums.
+    # Results sent via GBUS (32-bit) for inter-core reduction.
+    - !Component
+      name: acc_buffer
+      class: smartbuffer_RF
+      attributes:
+        depth: 16
+        width: 32
+        update_fifo_depth: 2
+        datawidth: 16
+        read_bandwidth: 2
+        write_bandwidth: 2
+      constraints:
+        dataspace: {keep: [Outputs]}
+        temporal:
+          permutation: [N, E, L, Q, R, S, D]
+          factors: [N=1, E=1, R=1, S=1, L=1, Q=1]
+
+    # -------------------------------------------
+    # Inputs pass-through
+    # -------------------------------------------
+    # Inputs flow via head_sram/global_sram broadcast,
+    # not stored in per-core parallel buffers.
+    - !Nothing {constraints: {dataspace: {keep: [Inputs]}}}
+
+  # =============================================
+  # MAC Lane — 16 Multipliers per Core
+  # =============================================
+  # RTL: core_mac.v, MAC_MULT_NUM = 16
+  # 16 parallel INT8 multiplies per cycle.
+  # Partitions reduction dimension (D).
+  # Total: 8 × 16 × 16 = 2048 MACs per DXE.
+  - !Container
+    name: mac_lane
+    spatial: {meshX: 16}
+    constraints:
+      spatial:
+        permutation: [D, N, E, L, R, S, Q]
+        factors: [N=1, E=1, L=1, R=1, S=1, Q=1]
+        split: 999
+
+  # =============================================
+  # MAC Unit
+  # =============================================
+  # RTL: core_mac.v
+  # INT8 multiply, INT16 accumulate (25b internal)
+  - !Component
+    name: mac
+    class: intmac
+    attributes:
+      multiplier_width: 8
+      adder_width: 16

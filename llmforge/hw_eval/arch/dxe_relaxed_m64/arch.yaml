@@ -1,0 +1,180 @@
+architecture:
+  # =========================================================================
+  # DXE — Relaxed Spatial Constraints for General GEMM/IHA Evaluation
+  #
+  # CHANGES from original DXE config (hw_eval/arch/DXE/):
+  #   1. Spatial constraints relaxed: DXT/VAC/mac_lane no longer force
+  #      specific dimension assignments. The mapper explores all valid
+  #      spatial partitions for each GEMM shape.
+  #   2. global_sram enlarged to 8KB (from 512B) to model a prefill-capable
+  #      variant. Original 512B only holds one d_model=512 vector.
+  #   3. head_sram enlarged to 2KB (from 512B) per DXT for tiling support.
+  #   4. KV cache remains bypassed for GEMM (active only for attention).
+  #
+  # PRESERVED from original:
+  #   - 8 DXT × 16 VAC × 16 MAC = 2048 INT8 MACs
+  #   - WMEM: 24KB per core (3MB total) — weight storage
+  #   - acc_buffer: 16-entry register accumulator per core
+  #
+  # DESIGN ENVELOPE NOTES:
+  #   - Native: MAX_EMBD_SIZE=512 (all weights on-chip, zero DRAM decode)
+  #   - Extended: n_embd=768 workloads require tiling through global_sram,
+  #     weights may exceed per-core WMEM for larger layers.
+  # =========================================================================
+  version: 0.4
+  nodes:
+
+  - !Container
+    name: system
+    attributes:
+      technology: "16nm"
+
+  # =============================================
+  # DRAM
+  # =============================================
+  - !Component
+    name: DRAM
+    class: DRAM
+    attributes:
+      type: "LPDDR4"
+      width: 64
+      datawidth: 8
+      read_bandwidth: 4
+      write_bandwidth: 4
+
+  # =============================================
+  # DXE Container
+  # =============================================
+  - !Container
+    name: DXE
+    attributes:
+      technology: "16nm"
+
+  # =============================================
+  # Global SRAM — 8KB (enlarged from 512B for prefill support)
+  # =============================================
+  # Original: 32 × 16B = 512B (one d_model=512 vector)
+  # Enlarged: 512 × 16B = 8KB (supports tiled prefill with n_embd=768)
+  - !Component
+    name: global_sram
+    class: smartbuffer_SRAM
+    attributes:
+      depth: 512
+      width: 128
+      n_banks: 4
+      datawidth: 8
+      # RTL: global_sram broadcasts to all 8 DXTs via token buffer
+      # 128-bit width = 16 B/cycle, multicast to 8 DXTs
+      read_bandwidth: 16
+      write_bandwidth: 16
+    constraints:
+      dataspace: {keep: [Inputs, Outputs], bypass: [Weights]}
+
+  # =============================================
+  # DXT Array — 8 Tiles
+  # =============================================
+  # 8 DXTs parallelize output dimension D (or E for some workloads)
+  # Relaxed from original head-only assignment
+  - !Container
+    name: DXT
+    spatial: {meshX: 8}
+    constraints:
+      spatial:
+        factors: [N=1, E=1, L=1, R=1, S=1, Q=1]
+
+  # =============================================
+  # Head SRAM — 2KB per DXT (enlarged from 512B)
+  # =============================================
+  - !Component
+    name: head_sram
+    class: smartbuffer_SRAM
+    attributes:
+      depth: 128
+      width: 128
+      n_banks: 2
+      datawidth: 8
+      # RTL: head_sram broadcasts to all 16 VACs simultaneously via HLINK
+      # Effective read BW = width/datawidth = 128/8 = 16 B/cycle per DXT
+      # With multicast to 16 VACs, each gets 16B/cycle
+      read_bandwidth: 16
+      write_bandwidth: 16
+    constraints:
+      dataspace: {keep: [Inputs, Outputs], bypass: [Weights]}
+
+  # =============================================
+  # VAC Array — 16 Cores per DXT
+  # =============================================
+  # 16 VACs further partition output dimension D within each DXT
+  - !Container
+    name: VAC
+    spatial: {meshY: 16}
+    constraints:
+      spatial:
+        factors: [N=1, E=1, L=1, Q=1, R=1, S=1]
+
+  # =============================================
+  # Per-Core Storage
+  # =============================================
+  - !Parallel
+    nodes:
+    # WMEM — 24KB weight memory per core
+    # RTL: 128-bit wide, feeds 16 MACs per cycle
+    # read_bandwidth = width/datawidth = 128/8 = 16 bytes/cycle
+    - !Component
+      name: wmem
+      class: smartbuffer_SRAM
+      attributes:
+        depth: 1536
+        width: 128
+        n_banks: 2
+        datawidth: 8
+        read_bandwidth: 16
+        write_bandwidth: 16
+      constraints:
+        dataspace: {keep: [Weights]}
+        temporal:
+          factors: [N=1, L=1, Q=1, S=1]
+
+    # Accumulator — partial sums
+    # RTL: 25-bit accumulator, 32-bit GBUS output
+    # Enlarged from depth=16 to depth=64 to allow more output-channel
+    # parallelism across the VAC spatial dimension. At depth=16, the
+    # mapper can only use D=4 per VAC, wasting 75% of spatial slots.
+    - !Component
+      name: acc_buffer
+      class: smartbuffer_RF
+      attributes:
+        depth: 64
+        width: 32
+        update_fifo_depth: 2
+        datawidth: 16
+        read_bandwidth: 4
+        write_bandwidth: 4
+      constraints:
+        dataspace: {keep: [Outputs]}
+        temporal:
+          factors: [N=1, E=1, R=1, S=1, L=1, Q=1]
+
+    # Inputs pass-through
+    - !Nothing {constraints: {dataspace: {keep: [Inputs]}}}
+
+  # =============================================
+  # MAC Lane — 16 multipliers
+  # =============================================
+  # 16 MACs parallelize reduction dimension E (inner product)
+  - !Container
+    name: mac_lane
+    spatial: {meshX: 64}
+    constraints:
+      spatial:
+        factors: [N=1, D=1, L=1, R=1, S=1, Q=1]
+
+  # =============================================
+  # MAC Unit — INT8×INT16
+  # =============================================
+  - !Component
+    name: mac
+    class: intmac
+    attributes:
+      multiplier_width: 8
+      adder_width: 16

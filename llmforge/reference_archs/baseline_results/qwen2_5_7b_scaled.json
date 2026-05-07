@@ -1,0 +1,116 @@
+{
+  "name": "Qwen-2.5-7B-scaled",
+  "globals": {
+    "n_embd": 768,
+    "block_size": 1024,
+    "use_concat_heads": true,
+    "layer_mask": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "n_active_layers": 22,
+  "params_M_est": 224.919552,
+  "zeus": {
+    "ttft": 0.02091503143310547,
+    "tpot": 0.017677261494100094,
+    "ttft_ms": 20.91503143310547,
+    "tpot_ms": 17.677261494100094,
+    "energy_per_token_uJ": 1085667.9687276483,
+    "session_e_per_tok_uJ": 545334.3816203997,
+    "power_W": 61.7316350889785,
+    "envelope_feasible": true,
+    "zeus_prefill_energy_J": 1.2802033953666687,
+    "zeus_decode_energy_J": 277.93099999427795,
+    "zeus_decode_len": 256,
+    "zeus_prefill_len": 256,
+    "zeus_dtype": "bf16",
+    "zeus_kv_cache_used": true,
+    "zeus_kv_cache_skip": null
+  },
+  "train": {
+    "val_loss": 2.7071,
+    "max_iters": 20000,
+    "dataset": "minipile",
+    "wall_s": 0.0,
+    "source": "injected (--inject_val_loss); not run in this process"
+  },
+  "config": {
+    "prefill_len": 256,
+    "decode_len": 256,
+    "seq_len": 512,
+    "zeus_dtype": "bf16",
+    "no_kv_cache": false
+  },
+  "timeloop_dxe_relaxed": {
+    "status": "prefill_only",
+    "note": "Prefill mapped successfully; decode pass returned 0 cycles (decode-shape too small or rejected).",
+    "energy_uJ": 26178.915488,
+    "cycles": 2801920.0,
+    "total_ops": 168232531456.0,
+    "total_memory_accesses": 209599808.0,
+    "fusion_saved_energy_uJ": 13118.144512,
+    "fusion_saved_cycles": 51242752.0,
+    "energy_per_token_uJ": 51.1306943125,
+    "cycles_per_token": 5472.5,
+    "token_delay": 5.4725e-06,
+    "edp": 7335.122688413696,
+    "prefill_energy_uJ": 13210.266784,
+    "prefill_cycles": 2801920.0,
+    "ttft": 0.00280192,
+    "decode_energy_uJ": 50.658784000000004,
+    "decode_cycles": 0,
+    "tpot": 0.0
+  },
+  "timeloop_dxe_relaxed_added_at": "2026-04-30T22:43:38.649992+00:00",
+  "timeloop_gemmini": {
+    "energy_per_token_uJ": 235.85932871875,
+    "ttft_ms": 3304.61472,
+    "tpot_ms": 3.2271628125,
+    "token_delay_s": 0.0006454325625,
+    "cycles": 660922944.0,
+    "prefill_cycles": 660922944.0,
+    "elapsed_s": 96.1727397441864
+  },
+  "timeloop_eyeriss": {
+    "energy_per_token_uJ": 181.61157849999998,
+    "ttft_ms": 5290.67968,
+    "tpot_ms": 5.166679375,
+    "token_delay_s": 0.001033335875,
+    "cycles": 1058135936.0,
+    "prefill_cycles": 1058135936.0,
+    "elapsed_s": 179.88004994392395
+  },
+  "timeloop_flat_edge": {
+    "energy_per_token_uJ": 79.67020015625,
+    "ttft_ms": 637.5933080000002,
+    "tpot_ms": 0.6226497148437502,
+    "token_delay_s": 0.00012452994296875003,
+    "cycles": 127518661.60000002,
+    "prefill_cycles": 127518661.60000002,
+    "elapsed_s": 732.050400018692
+  },
+  "timeloop_anchor_added_at": {
+    "ts": "2026-05-03 06:39:25"
+  }
+}

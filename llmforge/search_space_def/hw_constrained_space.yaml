@@ -1,0 +1,32 @@
+global_spec:
+  n_embd:
+    type: int
+    low: 512
+    high: 1024
+    step: 256
+  block_size:
+    type: int
+    low: 384
+    high: 1024
+    step: 128
+  
+layer_spec:
+  n_head_exp:
+    type: int
+    low: 1
+    high: 4
+    step: 1
+  n_kv_group_exp:
+    type: int
+    low: 1
+    high: 4
+    step: 1
+  mlp_size:
+    type: int
+    low: 512
+    high: 4096
+    step: 512
+  attention_variant:
+    type: cat
+    choices:
+      - causal

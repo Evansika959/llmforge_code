@@ -1,0 +1,71 @@
+constraints:
+  # Simba Output-Stationary constraints for GEMM workloads
+  # Adapted from timeloop-accelergy-exercises
+  #
+  # Key dataflow: outputs stay in local accumulators, weights stream
+  # through distributed buffers, inputs broadcast from global buffer.
+  #
+  # Spatial: PE meshX=16, distributed_buffers meshY=4, reg_mac meshY=4
+  # Total: 16 × 4 × 4 = 256 compute units
+  version: 0.4
+  targets:
+    # =======================================
+    # DRAM
+    # =======================================
+    - target: DRAM
+      type: temporal
+      permutation: [L, D, E]
+    # =======================================
+    # GlobalBuffer Constraints
+    # =======================================
+    - target: GlobalBuffer
+      type: temporal
+      factors: [D=1, E=1, L=1]
+      permutation: [L, E, D]
+    # =======================================
+    # PE Constraints
+    # =======================================
+    - target: PE
+      type: spatial
+      permutation: [D, E, R, S, L, Q, N]
+      factors: [R=1, S=1, L=1, Q=1, N=1]
+    # =======================================
+    # PEInputBuffer Constraints
+    # =======================================
+    - target: PEInputBuffer
+      type: temporal
+      factors: [D=1, E=1, L=1]
+      permutation: [L, E, D]
+    # =======================================
+    # distributed_buffers Constraints
+    # =======================================
+    - target: distributed_buffers
+      type: spatial
+      permutation: [D, E, Q, R, S, L, N]
+      factors: [L=1, Q=1, R=1, S=1, E=1, N=1]
+    # =======================================
+    # PEWeightBuffer Constraints
+    # =======================================
+    - target: PEWeightBuffer
+      type: temporal
+      permutation: [L, E, D]
+    # =======================================
+    # PEAccuBuffer Constraints
+    # =======================================
+    - target: PEAccuBuffer
+      type: temporal
+      permutation: [L, D, E]
+    # =======================================
+    # reg_mac Constraints
+    # =======================================
+    - target: reg_mac
+      type: spatial
+      permutation: [E, D, Q, R, S, L, N]
+      factors: [L=1, Q=1, R=1, S=1, D=1, N=1]
+    # =======================================
+    # PEWeightRegs Constraints
+    # =======================================
+    - target: PEWeightRegs
+      type: temporal
+      factors: [D=1, E=1, L=1]
+      permutation: [D, E, L]

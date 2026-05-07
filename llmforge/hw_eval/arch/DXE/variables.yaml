@@ -1,0 +1,8 @@
+variables:
+  # DXE nominal: 200 MHz (5 ns cycle) @ 1.0V
+  # Range: 12.5 MHz (0.56V) to 200 MHz (1.0V)
+  # RTL: sys_defs.svh — no explicit clock period define
+  #      (testbench uses configurable CLOCK_PERIOD)
+  version: 0.4
+  global_cycle_seconds: 5e-9
+  technology: "16nm"

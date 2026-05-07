@@ -1,0 +1,94 @@
+{
+  "name": "Pythia-160M",
+  "exp_name": "pythia_160m_rdxe",
+  "ref_yaml": "${LLMFORGE_DIR:-$HOME/llmforge}/reference_archs/pythia_160m.yaml",
+  "globals": {
+    "n_embd": 768,
+    "block_size": 512,
+    "use_concat_heads": true,
+    "layer_mask": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ],
+    "mlp_variant": "mlp"
+  },
+  "n_active_layers": 12,
+  "params_M_est": 113.246208,
+  "config": {
+    "prefill_len": 256,
+    "decode_len": 256,
+    "seq_len": 512,
+    "zeus_dtype": "bf16",
+    "no_kv_cache": false
+  },
+  "platforms_run": [
+    "rdxe"
+  ],
+  "platform_timings_s": {
+    "rdxe": 1.0948858261108398
+  },
+  "headline": {
+    "rdxe": {
+      "ttft_ms": 2.68008,
+      "tpot_ms": 1.69983,
+      "energy_per_token_uJ": 55.3793568768,
+      "power_W": 0.032579350215492145
+    }
+  },
+  "analytical": {
+    "params_M": 123.532032,
+    "params": 123.532032,
+    "flops_per_token": 170668032.0,
+    "kv_cache_bytes": 9437184,
+    "kv_cache_MB": 9.437184
+  },
+  "hw": {
+    "rdxe": {
+      "ttft": 0.0026800799999999996,
+      "tpot": 0.00169983,
+      "ttft_ms": 2.68008,
+      "tpot_ms": 1.69983,
+      "energy_per_token_uJ": 55.3793568768,
+      "session_e_per_tok_uJ": 61.7404669056,
+      "total_area_mm2": 568.4000000000001,
+      "power_W": 0.032579350215492145,
+      "mac_util_pct": 26.678765880217785,
+      "n_chips": 4,
+      "chip_macs": 16384,
+      "selected_mac_per_vac": 16,
+      "selected_max_chips": 8,
+      "selected_wmem_KB": 24,
+      "envelope_feasible": true,
+      "tokens_per_second": 2353.1764941200004,
+      "inter_chip_comm_energy_uJ": 0.018432,
+      "pipeline_depth": 4,
+      "chip_pareto": [
+        {
+          "sweep_mac_per_vac": 64,
+          "sweep_max_chips": 8,
+          "sweep_wmem_per_core_KB": 24,
+          "ttft_ms": 1.94424,
+          "tpot_ms": 1.69983,
+          "per_tok_uJ": 55.3793568768,
+          "session_e_per_tok_uJ": 61.7404669056,
+          "total_area_mm2": 568.4000000000001,
+          "power_W": 0.032579350215492145,
+          "mac_util_pct": 6.669691470054446,
+          "n_chips": 4,
+          "chip_macs": 65536
+        }
+      ]
+    }
+  },
+  "errors": {}
+}

@@ -1,0 +1,79 @@
+{
+  "name": "LLaMA-3-8B-scaled",
+  "globals": {
+    "n_embd": 768,
+    "block_size": 1024,
+    "use_concat_heads": true,
+    "layer_mask": [
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "n_active_layers": 30,
+  "params_M_est": 221.184,
+  "zeus": {
+    "ttft": 0.025425434112548828,
+    "tpot": 0.02430024277418852,
+    "ttft_ms": 25.425434112548828,
+    "tpot_ms": 24.30024277418852,
+    "energy_per_token_uJ": 1453335.9375200234,
+    "session_e_per_tok_uJ": 738789.0625104774,
+    "power_W": 60.15833549990018,
+    "envelope_feasible": true,
+    "zeus_prefill_energy_J": 6.206000000238419,
+    "zeus_decode_energy_J": 372.054000005126,
+    "zeus_decode_len": 256,
+    "zeus_prefill_len": 256,
+    "zeus_dtype": "bf16",
+    "zeus_kv_cache_used": true,
+    "zeus_kv_cache_skip": null
+  },
+  "train": {
+    "val_loss": 2.7649,
+    "max_iters": 20000,
+    "dataset": "minipile",
+    "wall_s": 0.0,
+    "source": "injected (--inject_val_loss); not run in this process"
+  },
+  "config": {
+    "prefill_len": 256,
+    "decode_len": 256,
+    "seq_len": 512,
+    "zeus_dtype": "bf16",
+    "no_kv_cache": false
+  },
+  "timeloop_dxe_relaxed": {
+    "status": "mapper_exception",
+    "note": "Timeloop mapper raised \u2014 D-axis dim not divisible by 128 (8 DXT \u00d7 16 VAC).",
+    "error": "Traceback (most recent call last):\n  File \"${LLMFORGE_DIR:-$HOME/llmforge}/bench_hw_eval.py\", line 438, in main\n    raw = evaluate_platform(plat, ind_dict, args)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"${LLMFORGE_DIR:-$HOME/llmforge}/bench_hw_eval.py\", line 170, in evaluate_platform\n    return ev.evaluate([ind_dict])[0]\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"${LLMFORGE_DIR:-$HOME/llmforge}/evaluators/hw_timeloop.py\", line 75, in evaluate\n    pf = evaluate_population(individuals,\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"${LLMFORGE_DIR:-$HOME/llmforge}/hw_exp.py\", line 549, in evaluate_population\n    individual_stats = eval_individual(individual, work_dir=base_work_dir, fused=fused, arch=arch, mode=mode)\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nRuntimeError: \n\n========================================================================================================================\nTimeloop mapper failed with return code 1. Please check the output files in ./hw_eval/runs/dxe_relaxed/prefill/gemm_768i_960o_256l for more information. To debug, you can edit the file:\n\t./hw_eval/runs/dxe_relaxed/prefill/gemm_768i_960o_256l/parsed-processed-input.yaml\nand run \n\ttl mapper ./hw_eval/runs/dxe_relaxed/prefill/gemm_768i_960o_256l/parsed-processed-input.yaml\nto see the error. If you're running the mapper and Timeloop can't find a vaild mapping, try setting 'diagnostics: true' in the mapper input specification.\n"
+  },
+  "timeloop_dxe_relaxed_added_at": "2026-04-30T22:43:38.649992+00:00"
+}

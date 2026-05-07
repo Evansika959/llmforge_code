@@ -1,0 +1,4 @@
+variables:
+  version: 0.4
+  global_cycle_seconds: 5e-9
+  technology: "16nm"

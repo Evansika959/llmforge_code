@@ -1,0 +1,63 @@
+# Search space tailored for seeding NSGA from SmolLM2-135M.
+#
+# Step grid chosen so SmolLM2-135M's canonical dims land exactly on a step:
+#   n_embd=576 (=384+3*64), block_size=512, n_head=9, n_kv_group=3,
+#   mlp_size=1536 (=3*512), n_qk_head_dim=64 (=2*32), n_v_head_dim=64,
+#   attention_variant=infinite.
+#
+# n_embd low/high bracket the seed (576) by ±2 step grid neighbours so
+# evolution can both shrink (down to 384) and grow (up to 960) the
+# embedding dim while remaining adjacent to the seed.
+
+global_spec:
+  n_embd:
+    type: int
+    low: 384
+    high: 960
+    step: 64
+  block_size:
+    type: int
+    low: 512
+    high: 512
+    step: 128
+  use_concat_heads:
+    type: cat
+    choices:
+      - true
+
+layer_spec:
+  n_head:
+    type: int
+    low: 1
+    high: 15
+    step: 1
+  n_kv_group:
+    type: int
+    low: 1
+    high: 15
+    step: 1
+  mlp_size:
+    type: int
+    low: 512
+    high: 4096
+    step: 512
+  n_qk_head_dim:
+    type: int
+    low: 32
+    high: 192
+    step: 32
+  n_v_head_dim:
+    type: int
+    low: 32
+    high: 192
+    step: 32
+  n_cproj:
+    type: int
+    low: 1
+    high: 1
+    step: 1
+  attention_variant:
+    type: cat
+    choices:
+      - infinite
+      - identity
