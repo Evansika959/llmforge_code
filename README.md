@@ -1,7 +1,8 @@
 # LLMForge
 
-Anonymous code release for the paper *LLMForge: Co-Evolving NAS with
-Infinite-Head Attention for Edge LLMs*.
+Anonymous code release for the paper *LLMForge: Multi-Backend
+Hardware-Aware Neural Architecture Search with Infinite-Head Attention
+for Edge Language Models*.
 
 LLMForge is a hardware-aware neural architecture search framework with three
 composable contributions: **Infinite-Head Attention (IHA)**, an attention
